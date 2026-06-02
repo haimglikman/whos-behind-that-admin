@@ -1,5 +1,12 @@
 ## Changelog
 
+### v2.6.0 (admin) | Server: v1.12.4 | Client: v1.7.0
+- Entity DB versioning: semantic versioning (major.minor.patch) shown as badge in Entity Database tab
+- Patch auto-increments on every save, edit, add, delete, or import
+- Minor/Major bump buttons for intentional restructures
+- DB version included in scan IDs: WBT-ADMIN-{date}-{appVer}-{srvVer}-DB{version}-{random}
+- Export includes version in filename and JSON; import reads and restores version from file
+
 ### v2.5.0 (admin) | Server: v1.12.4 | Client: v1.7.0
 - Entity database: Import/Export buttons — download entities as JSON, upload to replace. Entity management no longer requires code changes.
 - Entity: Ben Gvir & Smotrich split into two separate entities (id:28 Otzma Yehudit, id:28 Religious Zionism)

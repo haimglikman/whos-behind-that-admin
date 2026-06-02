@@ -228,7 +228,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.3.1</div>
+      <div class="version-badge" id="version-badge">v2.5.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -523,7 +523,11 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
       <div class="page-content">
       <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
         <div><h1>Entity database</h1><p>Israeli-Palestinian conflict — edit, add, or remove entities</p></div>
-        <button class="btn btn-sm btn-primary" onclick="toggleAddForm()">+ Add entity</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-sm" onclick="exportEntities()" title="Download entities as JSON">⬇ Export</button>
+          <label class="btn btn-sm" style="cursor:pointer" title="Upload entities JSON">⬆ Import<input type="file" accept=".json" onchange="importEntities(event)" style="display:none"></label>
+          <button class="btn btn-sm btn-primary" onclick="toggleAddForm()">+ Add entity</button>
+        </div>
       </div>
         <div class="add-form" id="add-form">
           <h3>New entity</h3>
@@ -561,12 +565,123 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <h2>Changelog</h2>
 
           <div class="changelog-item">
+            <div class="changelog-ver">v2.4.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Legal & disclaimer section:</strong> Added to About & Setup tab covering AI results, accuracy limitations, non-endorsement, editorial neutrality, scope, and intended use.</li>
+              <li><strong>Contact email:</strong> Updated to contact@whosbehindthat.com.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.3.1</div>
+            <div class="changelog-date">Previous version — bug fix</div>
+            <ul>
+              <li><strong>X URL normalization:</strong> Posts now stored with proper username URL (x.com/username/status/...) instead of /i/status/ format from mobile share sheet.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.3.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Post text in results:</strong> Analyzed post text now shown below results header in Analyze tab.</li>
+              <li><strong>Prominent scan ID:</strong> Scan ID shown with label in results header.</li>
+              <li><strong>Open Post button:</strong> "↗ Open post" button added next to URL in results.</li>
+              <li><strong>History: Search by ID and URL:</strong> Two new filter fields added to Post history.</li>
+              <li><strong>History: Entity multi-select:</strong> Entity match filter replaced with autocomplete multi-select — type to search, click to add, tags show selected entities.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.2.1</div>
+            <div class="changelog-date">Previous version — bug fix</div>
+            <ul>
+              <li><strong>Client scan ID migration:</strong> Fixed migration for client scans with numeric IDs — now correctly uses usr_XXXX prefix.</li>
+              <li><strong>hashToPrefix fix:</strong> Fixed to strip usr_ prefix rather than hashing it again.</li>
+              <li><strong>Back button from analyzed post:</strong> Now returns to history tab instead of looping through tabs.</li>
+              <li><strong>Scan ID in URL hash:</strong> Pushed to URL when opening a history entry (#analyze/WBT-ADMIN-...).</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.2.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>User prefix in scan IDs:</strong> All admin scans now use WBT-ADMIN-{date}-... format.</li>
+              <li><strong>Retroactive migration:</strong> Old WBT-{date}-... IDs upgraded to WBT-ADMIN-{date}-...; numeric IDs converted to WBT format.</li>
+              <li><strong>Scan ID in results header:</strong> Now shown when viewing a post analysis.</li>
+              <li><strong>Browser back/forward:</strong> Tab switches now update the URL hash — back/forward navigate between tabs.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.1.1</div>
+            <div class="changelog-date">Previous version — bug fix</div>
+            <ul>
+              <li><strong>All tabs accessible:</strong> Fixed History, Database, Actors, and About tabs being inaccessible — pages were accidentally nested inside page-analyze due to unclosed div.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.1.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Client scan counter:</strong> Fixed not updating — now reads from history on every load.</li>
+              <li><strong>Source/user filters:</strong> Fixed not working on client scans — sync now correctly maps source and deviceId fields.</li>
+              <li><strong>Dial fixed:</strong> Oversized alignment dial when replaying history entries corrected.</li>
+              <li><strong>Browser tab title:</strong> Now shows "Who's Behind That? — Admin".</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.0.0</div>
+            <div class="changelog-date">Previous version — major milestone</div>
+            <ul>
+              <li><strong>New design:</strong> Nunito font, light blue background (#e8f2fc), navy topbar (#0f2744), rounded cards (14px radius).</li>
+              <li><strong>Two scan counters:</strong> Admin scans (blue) + Client scans (gold) tracked separately in sidebar.</li>
+              <li><strong>Source/user history filters:</strong> Filter by Admin/Client source and by anonymous user ID (usr_XXXX).</li>
+              <li><strong>Client scans in history:</strong> Client page now saves to shared DB — visible in admin history with source and user badges.</li>
+              <li><strong>Bottom status bar:</strong> Server status, app version, and server version shown at bottom.</li>
+              <li><strong>_cachedSrvVersion bug fixed:</strong> Prevented successful scans from being saved as failed.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v1.13.3 — v1.9.0</div>
+            <div class="changelog-date">Previous versions</div>
+            <ul>
+              <li><strong>Shared PostgreSQL history:</strong> All scans synced to server DB; history merged across sessions.</li>
+              <li><strong>Scan IDs:</strong> WBT-{date}-{appVer}-{srvVer}-{random} format introduced.</li>
+              <li><strong>App/server version tracking:</strong> Versions stored per scan and shown in history.</li>
+              <li><strong>Coherence check:</strong> Second-pass validation to catch contradictory scores.</li>
+              <li><strong>Language-aware scoring:</strong> Hebrew and Arabic posts pre-translated with political context before scoring.</li>
+              <li><strong>Instagram auto-fetch:</strong> oEmbed + OpenGraph with 100-char minimum; manual paste fallback.</li>
+              <li><strong>Facebook fetching:</strong> OpenGraph scraping with multiple user agents.</li>
+              <li><strong>Convergent interest detection:</strong> Separate async call detecting when two rival entities both benefit from a post.</li>
+              <li><strong>History filters:</strong> Platform, version, entity multi-select, date, score, AI score, alignment type, has comment, source, user.</li>
+              <li><strong>Failed scan tracking:</strong> Failed fetches logged in history with error details.</li>
+              <li><strong>Post text in history:</strong> Preview shown in history cards.</li>
+              <li><strong>Actor research:</strong> Added to history entries and analyze results.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v1.8.1</div>
+            <div class="changelog-date">Previous version — bug fix</div>
+            <ul>
+              <li><strong>Shared history sync:</strong> Fixed edge case where entries were duplicated on sync.</li>
+              <li><strong>Server version badge:</strong> Fixed display in sidebar.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
             <div class="changelog-ver">v1.8.0</div>
-            <div class="changelog-date">Current version</div>
+            <div class="changelog-date">Previous version</div>
             <ul>
               <li><strong>Primary / secondary alignment:</strong> Entity matches now split into two groups. Primary = entity the post was likely written to serve directly. Secondary = indirect collateral beneficiary. Max 3 primary, 2 secondary.</li>
-              <li><strong>Visual distinction:</strong> Primary matches shown with solid border; secondary matches shown with dashed border and muted styling so the two groups are immediately distinguishable.</li>
-              <li><strong>New entities (50 → 56):</strong> Added Israeli Opposition Bloc (Lapid/Yesh Atid), Israeli Protest Movement, Israeli Hostage Families Forum, Avigdor Lieberman/Yisrael Beiteinu, Israeli Left/Peace Camp (Meretz/Peace Now), Arab Citizens of Israel/Joint List.</li>
+              <li><strong>Visual distinction:</strong> Primary matches shown with solid border; secondary matches shown with dashed border and muted styling.</li>
+              <li><strong>New entities (50 → 56):</strong> Added Israeli Opposition Bloc, Israeli Protest Movement, Israeli Hostage Families Forum, Avigdor Lieberman/Yisrael Beiteinu, Israeli Left/Peace Camp, Arab Citizens of Israel/Joint List.</li>
             </ul>
           </div>
 
@@ -694,6 +809,21 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <div class="step-card"><div class="step-num">11</div><div class="step-body"><h4>Update package.json</h4><p>Upload the new <code>package.json</code> to your <code>whos-behind-that-server</code> GitHub repo — it now includes the <code>pg</code> database driver. The table is created automatically on first server start.</p></div></div>
           <div class="step-card"><div class="step-num">12</div><div class="step-body"><h4>Verify</h4><p>Visit your Render server URL in a browser. You should see <code>"db": true</code> in the response JSON, confirming the database is connected. All scans will now be shared across all users.</p></div></div>
         </div>
+      </div>
+
+      <div style="margin-top:8px">
+        <div class="card-label" style="margin-bottom:12px">Legal & disclaimer</div>
+        <div class="disclaimer-box" style="font-size:12px;line-height:1.8">
+          <p><strong>AI-generated results:</strong> All analysis, scoring, and alignment results are generated by Claude AI (Anthropic). Results are probabilistic assessments, not factual determinations.</p>
+          <p style="margin-top:8px"><strong>Results may be wrong:</strong> AI scoring is imperfect. Posts may be misclassified, context may be missed, and scores should always be treated as one input among many — not as definitive conclusions.</p>
+          <p style="margin-top:8px"><strong>Not an endorsement:</strong> Alignment with an entity does not mean the post author is officially affiliated with, endorsed by, or acting on behalf of that entity. Narrative alignment reflects whose interests a post may serve, not who created it or why.</p>
+          <p style="margin-top:8px"><strong>No editorial stance:</strong> Who's Behind That? takes no political position and makes no editorial judgment about any of the entities, claims, or posts analyzed.</p>
+          <p style="margin-top:8px"><strong>Scope limitation:</strong> The entity database reflects a specific point-in-time snapshot and may not account for all relevant parties or recent political developments.</p>
+          <p style="margin-top:8px"><strong>Not for official use:</strong> Results should not be used as evidence in legal, journalistic, or political proceedings. For research and media literacy purposes only.</p>
+          <p style="margin-top:8px"><strong>Third parties:</strong> Post text is sent to Anthropic's Claude API for analysis. No data is shared with any other third party.</p>
+          <p style="margin-top:8px"><strong>Contact:</strong> <a href="mailto:contact@whosbehindthat.com" style="color:var(--blue)">contact@whosbehindthat.com</a></p>
+        </div>
+      </div>
       </div><!-- end page-content -->
     </div><!-- end page-about -->
 
@@ -715,7 +845,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
 <script>
 const DEFAULT_ENTITIES = [
   // ── NATION STATES ──
-  { id:1, name:"Israel (Netanyahu government)", type:"Nation state", narrative:"Israel is exercising its inherent right to self-defense following the October 7, 2023 Hamas terrorist attack. Goals: eliminate Hamas military and governing capabilities, secure return of all hostages, and prevent Gaza from being used as a future base for attacks. Israel maintains it targets Hamas infrastructure, not civilians.", interest:"Permanently dismantling Hamas as a military force, preventing Iranian regional hegemony, maintaining military superiority, and—for Netanyahu's coalition—avoiding political collapse and delaying accountability for October 7 intelligence failures.", mo:"Sustained air and ground campaign in Gaza; economic blockade; targeted assassinations of Hamas/Hezbollah leadership; pager/walkie-talkie attacks on Hezbollah; diplomatic pressure to block ICC/ICJ proceedings; leveraging U.S. military aid.", comments:"Netanyahu faces ICC arrest warrant. Far-right coalition partners (Ben Gvir, Smotrich) push for annexation and oppose any two-state solution." },
+  { id:1, name:"Israel / Likud (Netanyahu government)", type:"Nation state", narrative:"Israel is exercising its inherent right to self-defense following the October 7, 2023 Hamas terrorist attack. Goals: eliminate Hamas military and governing capabilities, secure return of all hostages, and prevent Gaza from being used as a future base for attacks. Israel maintains it targets Hamas infrastructure, not civilians.", interest:"Permanently dismantling Hamas as a military force, preventing Iranian regional hegemony, maintaining military superiority, and—for Netanyahu's coalition—avoiding political collapse, winning the 2026 elections, and delaying accountability for October 7 intelligence failures.", mo:"Sustained air and ground campaign in Gaza; economic blockade; targeted assassinations of Hamas/Hezbollah leadership; diplomatic pressure to block ICC/ICJ proceedings; leveraging U.S. military aid; framing the election as a security referendum on Netanyahu's leadership.", comments:"Likud polling ~25 seats in 2026 elections. Netanyahu faces ICC arrest warrant. Coalition depends on Ben Gvir and Smotrich; Haredi parties are indispensable partners. Bennett leads the opposition." },
   { id:2, name:"United States", type:"Nation state", narrative:"Affirms Israel's right to self-defense while calling for civilian protection and humanitarian access. Trump administration unveiled a plan favoring Israeli security interests, floated Gaza displacement proposals, and signaled reduced pressure on Israel.", interest:"Maintaining a stable pro-Western Middle East; protecting Israel as a strategic ally; managing oil flows; securing Saudi normalization; preventing Iran from gaining nuclear capability or regional dominance.", mo:"$22+ billion military aid to Israel since Oct 7; UN Security Council vetoes on ceasefire resolutions; diplomatic brokering; military presence in region; sanctions on select parties.", comments:"Deepest domestic political division on this issue in decades. The U.S. remains the most powerful external actor in the conflict." },
   { id:3, name:"Iran", type:"Nation state", narrative:"Supports 'the Palestinian resistance' (المقاومة الفلسطينية) against 'Zionist occupation' (الاحتلال الصهيوني). Denies directly ordering proxy attacks, framing support as backing oppressed Muslims. Promotes the 'Axis of Resistance' (محور المقاومة) as the only legitimate response to Western imperialism. Officials have called for the 'elimination of the Zionist entity' through referendum.", interest:"Extend regional influence via proxy network; bog down Israel and the U.S.; prevent Arab-Israeli normalization (التطبيع) especially Saudi; maintain the Axis of Resistance as a deterrent against attack on Iran's nuclear program.", mo:"Funding and arming Hamas, Hezbollah, PIJ, and Houthis; IRGC Quds Force coordination; missile and drone technology transfers; financial transfers via shell entities; Al-Manar and Press TV as media instruments; promoting anti-normalization (مناهضة التطبيع) messaging across Arab social media.", comments:"Iran's direct strikes on Israel in April and October 2024 marked historic escalation. Proxy network significantly degraded since October 2023." },
   { id:4, name:"Qatar", type:"Nation state", narrative:"Supports Palestinian statehood and condemns Israeli military operations as disproportionate. Frames itself as neutral mediator and humanitarian donor, hosting Hamas's political bureau at joint U.S.-Israel request.", interest:"Use unique mediator position to elevate international status, deter Saudi/UAE hostility, and protect itself through strategic irreplaceability — indispensable to all sides. Al Jazeera as soft-power instrument.", mo:"Hosting Hamas political leadership in Doha; mediating ceasefire and hostage negotiations; Al Jazeera media influence; financial support for Gaza; hosting U.S. Al Udeid airbase as insurance.", comments:"Relations with Israel deteriorated sharply after Israeli strike in Doha area in September 2025." },
@@ -747,9 +877,10 @@ const DEFAULT_ENTITIES = [
   { id:26, name:"Khaled Meshaal", type:"Politician", narrative:"Hamas political bureau leader based in Qatar. Frames the conflict as a legitimate resistance struggle and advocates for a unified Palestinian front under Hamas's leadership.", interest:"Maintaining Hamas's political legitimacy internationally; positioning himself within Hamas's post-October 7 leadership restructuring; securing continued Qatari and Iranian financial support.", mo:"International diplomatic meetings; media appearances on Al Jazeera and Arab networks; coordinating political positions between Hamas's external leadership and internal Gaza command.", comments:"Has been based outside Gaza for decades. Represents the more politically pragmatic wing of Hamas versus the hardline military wing inside Gaza." },
 
   // ── ISRAELI POLITICIANS ──
-  { id:27, name:"Benjamin Netanyahu", type:"Politician", narrative:"The war is an existential fight for Israel's survival against 'the new Nazis.' Israel will not stop until Hamas is destroyed and all hostages returned. Opposes Palestinian state.", interest:"Personal political survival — a ceasefire risks collapse of his far-right coalition and could accelerate his corruption trial and ICC proceedings against him.", mo:"Maintaining coalition with Ben Gvir and Smotrich; delaying hostage deal negotiations when politically convenient; lobbying Washington; controlling military messaging.", comments:"ICC arrest warrant issued November 2024 for war crimes and crimes against humanity. Has affected his international travel and standing." },
-  { id:28, name:"Itamar Ben Gvir & Bezalel Smotrich", type:"Politician", narrative:"Advocate for Israeli annexation of the West Bank (יהודה ושומרון — Judea and Samaria), expanded settlements (התנחלויות), and blocking any Palestinian state. Called for voluntary emigration of Palestinians from Gaza and reestablishment of Israeli settlements. Frame sovereignty (ריבונות) as a religious and security imperative.", interest:"Using the war to permanently foreclose any two-state possibility and annex the West Bank. Hold Netanyahu's coalition hostage — their departure would collapse his government. Benefit from any content demanding harder enforcement against Palestinian construction or 'invasion' (פלישה).", mo:"Threatening coalition collapse to block ceasefire deals; blocking humanitarian aid; promoting West Bank settlement expansion; demanding enforcement (אכיפה) against Palestinian outposts and infrastructure; funding settler violence; inflammatory visits to Al-Aqsa; using sovereignty (ריבונות) and return (שיבה לארץ) language.", comments:"Both face U.S. and EU sanctions consideration. Ben Gvir stormed the military detention facility where soldiers accused of abuse were held." },
-  { id:29, name:"Benny Gantz", type:"Politician", narrative:"Supported entering the emergency war cabinet after October 7 but resigned in June 2024 over lack of a clear post-war strategy. Advocates for a hostage deal and a credible day-after plan for Gaza.", interest:"Positioning himself as the centrist alternative to Netanyahu — responsible, security-focused, but not extremist. Building support for the next Israeli election, whenever it comes.", mo:"Public criticism of war cabinet decision-making; advocating for hostage deal priority; media appearances; building coalition with other centrist parties.", comments:"His resignation from the war cabinet was a significant political moment, signaling the governing coalition's internal fractures over war aims." },
+  { id:27, name:"Benjamin Netanyahu / Likud", type:"Politician", narrative:"The war is an existential fight for Israel's survival. Israel will not stop until Hamas is destroyed and all hostages returned. Opposes Palestinian state. Frames himself as the only leader capable of securing Israel against existential threats.", interest:"Personal political survival — winning the 2026 elections, delaying his corruption trial, avoiding ICC enforcement, and maintaining his coalition. Benefits from any content that elevates security threats, delegitimizes Bennett as weak, or frames the opposition as naive on security.", mo:"Maintaining coalition with Ben Gvir, Smotrich, Shas, and UTJ; controlling military and security messaging; framing Bennett as inexperienced and Lapid as leftist; using war narrative to dominate the election campaign; lobbying Washington; resisting state commission of inquiry into October 7.", comments:"ICC arrest warrant issued November 2024. Likud polling ~25 seats. Bennett has emerged as his main challenger. Netanyahu is reportedly trying to broker a joint run between Ben Gvir and Smotrich to maximize right-wing seats." },
+  { id:28, name:"Itamar Ben Gvir / Otzma Yehudit", type:"Politician", narrative:"Ultranationalist populist agenda: death penalty for terrorists, mass expulsion of Palestinians, unrestricted settler activity, and aggressive security enforcement. Frames himself as the only leader willing to act without restraint. Uses inflammatory acts (storming of Al-Aqsa, taunting of flotilla detainees) as political branding. Sovereignty (ריבונות) and enforcement (אכיפה) are central terms.", interest:"Maximizing political power in 2026 elections and beyond; running independently from Smotrich to maximize his own party's seats; being indispensable to any right-wing coalition; using every security incident to demonstrate his brand of uncompromising hardline politics. Benefits from any content glorifying settler violence, demanding harsh enforcement, or portraying the government as soft on Arabs or terrorism.", mo:"Inflammatory public acts (Al-Aqsa visits, detention facility storming, flotilla taunting); threatening coalition collapse; demanding police enforcement actions; social media confrontationalism; branding rivals including Smotrich as insufficiently hardline.", comments:"Polling ~10 seats in 2026, rising. Has ruled out joint run with Smotrich, running Otzma Yehudit independently. Faces travel bans from several countries. Netanyahu reportedly trying to broker reconciliation with Smotrich." },
+  { id:28, name:"Bezalel Smotrich / Religious Zionism", type:"Politician", narrative:"Religious-nationalist ideology: annexation of Judea and Samaria (יהודה ושומרון), blocking any Palestinian state, expanding settlements as a religious obligation, and applying Israeli sovereignty over biblical lands. As Finance Minister, has pushed aggressive economic and construction policies benefiting the settler movement.", interest:"Cementing annexation of the West Bank as irreversible before any political settlement; maintaining Religious Zionism as the ideological anchor of the Israeli right; surviving the 2026 elections above the threshold. Benefits from any content promoting settlement expansion, sovereignty over the West Bank, or framing a Palestinian state as an existential threat.", mo:"Using Finance Ministry to fund settlements and block Palestinian construction; threatening coalition collapse over ceasefire or hostage deals; promoting 'voluntary emigration' of Palestinians from Gaza; settler movement lobbying; framing annexation as both religious duty and security imperative.", comments:"Polling at or below the electoral threshold in 2026 — his weakest position in years. Smotrich's economic decisions as Finance Minister have damaged his standing with some Likud voters. Ben Gvir has ruled out a joint run. Netanyahu may attempt to broker a merger to keep both above the threshold." },
+  { id:29, name:"Benny Gantz / National Unity", type:"Politician", narrative:"Security-focused centrist who entered the emergency war cabinet after October 7 and resigned in June 2024 over the lack of a post-war strategy. Continues to call for a hostage deal, early elections, and a responsible day-after plan for Gaza.", interest:"Remaining politically relevant as a centrist security figure despite being overshadowed by Bennett as the main opposition leader. Benefits from content highlighting war management failures or the need for responsible security leadership.", mo:"Parliamentary activity; media appearances; positioning as a senior security figure; differentiating from Bennett's more aggressive anti-Netanyahu positioning.", comments:"Gantz was the leading opposition figure through much of 2024-2025 but has been eclipsed by Bennett's return. His National Unity party is expected to run but polling significantly below Bennett's list. His resignation from the war cabinet in June 2024 was a defining moment." },
 
   // ── U.S. POLITICIANS ──
   { id:30, name:"Donald Trump", type:"Politician", narrative:"Strong support for Israel and expansive Israeli war aims. Proposed 'riviera' plan for Gaza involving displacing Palestinians to Egypt and Jordan. Mediated the January 2025 ceasefire phase agreement.", interest:"Securing a major Middle East 'deal' as a legacy achievement; pleasing pro-Israel evangelical and donor base; weakening Iran's regional position; extracting economic and diplomatic concessions from Gulf states.", mo:"Proposing and pressuring parties toward his own peace framework; granting Israel more military latitude than Biden; pressuring Saudi Arabia toward normalization; floating Gaza displacement as U.S. policy.", comments:"Gaza displacement proposal rejected by Egypt, Jordan, Saudi Arabia, Turkey, and all EU nations. Relationship with Netanyahu is the warmest of any U.S. president." },
@@ -781,7 +912,7 @@ const DEFAULT_ENTITIES = [
   { id:50, name:"Global Jihadist Networks (Al-Qaeda / ISIS affiliates)", type:"Terror organization", narrative:"Frame the Israeli-Palestinian conflict as part of a cosmic war between Islam and the West/Zionism. Use Gaza civilian casualties as recruitment material and justification for attacks globally.", interest:"Using the conflict to recruit, radicalize, and incite attacks in Western countries and against Israel. Gaza imagery serves as the most powerful radicalization content available.", mo:"Online propaganda using Gaza imagery; inciting 'lone wolf' attacks in Western cities; recruitment messaging framing Gaza as proof that the West wages war on Islam; attempting to exploit conflict to expand influence at Hamas's expense.", comments:"ISIS and Al-Qaeda actually have complex relationships with Hamas — both have criticized Hamas for being too 'nationalist' rather than sufficiently Islamist. But they exploit the conflict heavily for their own purposes." },
 
   // ── ISRAELI DOMESTIC OPPOSITION ──
-  { id:51, name:"Israeli Opposition Bloc (Lapid / Yesh Atid)", type:"Politician", narrative:"Advocates for a hostage deal (עסקת חטופים) as the top priority, a credible post-war governance plan for Gaza, and a return to a path toward a two-state solution. Frames Netanyahu's continued leadership as an obstacle to both security and democratic norms. Uses 'Bibiism' (ביביזם) as a term for the culture of blind loyalty to Netanyahu above national interest. Calls for accountability (אחריותיות) for October 7 failures.", interest:"Replacing Netanyahu as Prime Minister; forcing early elections (בחירות מוקדמות); positioning Lapid as the responsible centrist alternative. Benefits from any narrative that delegitimizes Netanyahu personally or highlights his coalition's extremism or the government's failure to secure the hostages.", mo:"Parliamentary opposition; weekly media appearances attacking government war management; emphasizing hostage families' demands; highlighting coalition dependence on Ben Gvir and Smotrich (ביביזם); using terms like 'surrender to coalition' (כניעה לקואליציה) and 'Netanyahu chooses his seat over the hostages'; international lobbying.", comments:"Yair Lapid leads the largest opposition party. The term 'Bibiism' (ביביזם) has become the central framing of the Israeli opposition — any post using it almost certainly serves this entity." },
+  { id:51, name:"Naftali Bennett / Bennett 2026", type:"Politician", narrative:"Right-wing former PM who returned from political retirement to lead the opposition. Frames himself as the responsible security alternative to Netanyahu — tough on Hamas, committed to the hostages, and capable of leading Israel without the chaos of the far-right coalition. Positions himself as the leader who can win the war and restore Israel's international standing. Lapid has joined his list, making it the central opposition bloc.", interest:"Becoming Prime Minister after the 2026 elections; replacing Netanyahu's coalition with a broad center-right government that excludes Ben Gvir and Smotrich; positioning as the dominant anti-Netanyahu figure. Benefits from any content attacking Netanyahu's war management, coalition dysfunction, hostage deal failures, or October 7 accountability.", mo:"Leading opposition bloc with Lapid; weekly attacks on Netanyahu's war management; emphasizing hostage deal failures; framing Netanyahu as prioritizing his seat over national security; using 'Bibiism' (ביביזם) framing; international media appearances; positioning as IDF-aligned security hawk versus Netanyahu's political chaos.", comments:"Polling ~19 seats, the largest opposition party. Lapid chose to join Bennett's list after struggling to gain traction independently. The term 'Bibiism' (ביביזם) remains the central opposition framing. Bennett is Netanyahu's most dangerous electoral threat." },
 
   { id:52, name:"Israeli Protest Movement", type:"Int'l organization", narrative:"The ongoing mass protest movement (מחאה) calling for a hostage deal (עסקת חטופים), early elections (בחירות מוקדמות), and Netanyahu's resignation. Frames itself as defending Israeli democracy (דמוקרטיה) against a government that prioritizes political survival over the hostages and national security. Uses terms like 'the government abandoned the hostages' (הממשלה זנחה את החטופים).", interest:"Forcing elections and removing Netanyahu from power. Benefits from any content that highlights government failures, hostage suffering, October 7 accountability (אחריות ל-7 באוקטובר), or coalition extremism.", mo:"Weekly mass demonstrations (הפגנות) in Tel Aviv and Jerusalem; blocking roads; protests outside the Knesset and Netanyahu's residence; international media engagement; coordination with hostage families forum; using 'Bibiism' (ביביזם) framing.", comments:"One of the largest sustained civil society mobilizations in Israeli history. Its messaging heavily emphasizes personal accountability for October 7 failures." },
 
@@ -789,9 +920,16 @@ const DEFAULT_ENTITIES = [
 
   { id:54, name:"Avigdor Lieberman / Yisrael Beiteinu", type:"Politician", narrative:"Fiercely anti-Netanyahu despite being a right-wing, security-hawkish politician. Advocates for dismantling Hamas completely, opposing ultra-Orthodox draft exemptions, and secular governance. Frames Netanyahu's reliance on Ben Gvir and Smotrich as a national security threat.", interest:"Replacing Netanyahu with a secular right-wing government that excludes the ultra-Orthodox and religious nationalist parties. Lieberman's base is largely Russian-Israeli secular voters who are hawkish on security but hostile to religious coercion and Haredi political power.", mo:"Sharp parliamentary and media attacks on Netanyahu; exploiting the contradiction between Netanyahu's security-hawk image and his dependence on coalition partners who block military draft equality; positioning as the 'real right' versus what he calls Netanyahu's corrupt populism.", comments:"Lieberman is a uniquely awkward figure — right-wing on security, left-wing on religion and state, and personally consumed by hatred of Netanyahu after years as his coalition partner. His voters are among the most skeptical of any deal with Hamas." },
 
-  { id:55, name:"Israeli Left / Peace Camp (Meretz / Peace Now)", type:"Politician", narrative:"Advocates for an immediate ceasefire, end to occupation, two-state solution, and Israeli accountability for civilian casualties in Gaza. Frames the war as an opportunity to end the occupation rather than entrench it. Supports ICC jurisdiction over Israeli officials.", interest:"Ending the occupation and achieving a negotiated two-state solution. Politically marginalized since October 7 but representing a consistent ideological position that benefits from any narrative highlighting Palestinian civilian suffering, Israeli military excesses, or the futility of military solutions.", mo:"Public advocacy; international media; joint Israeli-Palestinian civil society activities; supporting B'Tselem and human rights documentation; backing ICC proceedings; demonstrating against both the war and the occupation.", comments:"Meretz fell below the electoral threshold in the 2022 elections. The Israeli left is at its weakest point in decades following October 7, as the attack discredited the 'partner for peace' argument in mainstream Israeli discourse. But it remains a coherent voice internationally." },
+  { id:55, name:"Yair Golan / The Democrats", type:"Politician", narrative:"Left-leaning alliance led by former IDF Deputy Chief Yair Golan. Calls for a hostage deal, accountability for October 7, end to occupation, and a political horizon for a two-state solution. Absorbed Labor and elements of the old Meretz base. Frames the war as requiring both security and diplomatic solutions, not military force alone.", interest:"Winning seats in the 2026 elections and pulling Israeli politics back toward a diplomatic track; keeping the two-state solution on the agenda; accountability for October 7 failures and civilian casualties in Gaza. Benefits from any content highlighting Palestinian civilian suffering, government dysfunction, or the need for a political solution.", mo:"Parliamentary opposition; media appearances by Golan as a credible security figure (ex-IDF); supporting B'Tselem and human rights documentation; ICC proceedings; anti-occupation activism; coordinating with Arab parties.", comments:"Polling ~11 seats. Meretz fell below the threshold in 2022 and the Israeli left has consolidated around Golan's Democrats. Golan's IDF background gives him credibility on security that previous left leaders lacked. Labor is part of the alliance." },
 
-  { id:56, name:"Arab Citizens of Israel / Joint List", type:"Politician", narrative:"Represents Arab Palestinian citizens of Israel (approximately 20% of the population). Calls for ceasefire, end to occupation, equal civil rights within Israel, and accountability for civilian deaths in Gaza. Frames the war as revealing the systemic discrimination faced by Arab citizens.", interest:"Protecting the rights and political representation of Arab citizens of Israel; preventing the war from being used to justify further marginalization; maintaining political relevance in the Knesset despite enormous social pressure following October 7.", mo:"Parliamentary opposition; public statements; international outreach; documenting anti-Arab discrimination within Israel during wartime; coordinating with Palestinian civil society.", comments:"Arab citizens of Israel faced significant social hostility after October 7. Several Arab politicians were temporarily suspended from the Knesset. Their political voice has been severely constrained by the wartime atmosphere but remains a distinct and important domestic constituency." }
+  { id:56, name:"Arab Citizens of Israel / Joint List", type:"Politician", narrative:"Represents Arab Palestinian citizens of Israel (approximately 20% of the population). Calls for ceasefire, end to occupation, equal civil rights within Israel, and accountability for civilian deaths in Gaza. Frames the war as revealing the systemic discrimination faced by Arab citizens.", interest:"Protecting the rights and political representation of Arab citizens of Israel; preventing the war from being used to justify further marginalization; maintaining political relevance in the Knesset despite enormous social pressure following October 7.", mo:"Parliamentary opposition; public statements; international outreach; documenting anti-Arab discrimination within Israel during wartime; coordinating with Palestinian civil society.", comments:"Arab citizens of Israel faced significant social hostility after October 7. Several Arab politicians were temporarily suspended from the Knesset. Their political voice has been severely constrained by the wartime atmosphere but remains a distinct and important domestic constituency." },
+
+  { id:57, name:"Gadi Eisenkot / Yashar!", type:"Politician", narrative:"Centrist party led by former IDF Chief of Staff Gadi Eisenkot. Advocates for a hostage deal as the top priority, accountability for October 7, and restoring Israel's security deterrence through professional military leadership rather than political interference. Draws former Labor and centrist voters seeking a security-credible alternative.", interest:"Winning seats in the 2026 elections as the centrist security option; positioning Eisenkot as a responsible military-professional alternative to both Netanyahu's political chaos and Bennett's right-wing positioning. Benefits from content highlighting IDF professionalism, hostage deal urgency, or accountability for October 7 military failures.", mo:"Parliamentary activity; Eisenkot's media presence as a former IDF chief; emphasizing military competence versus political interference; supporting hostage deal negotiations; differentiating from Bennett on security doctrine.", comments:"Polling ~14 seats, one of the stronger opposition parties. Eisenkot's credibility comes from his IDF career. He was a member of the war cabinet and has been among the most vocal critics of Netanyahu's management of the war from a security perspective." },
+  { id:58, name:"Shas / Aryeh Deri", type:"Politician", narrative:"Ultra-Orthodox Sephardic party representing Mizrahi Haredi community. Supports Netanyahu's coalition in exchange for religious funding, Haredi draft exemptions, and protection of traditional Jewish values. Frames military draft exemptions as essential to Torah study and Jewish continuity.", interest:"Maintaining Haredi draft exemptions; securing government funding for yeshivot and religious institutions; protecting Shas's political power within any governing coalition. Benefits from any content supporting religious exemptions from military service, attacking secular attacks on religious communities, or defending traditional Jewish values against 'Western' influence.", mo:"Coalition leverage — threatening withdrawal to extract religious concessions; blocking draft legislation; securing budget allocations for religious institutions; Shas-aligned media; Deri's personal political rehabilitation after criminal conviction.", comments:"Polling ~9 seats. Key coalition partner for Netanyahu. Aryeh Deri was convicted of tax offenses but returned to lead the party. The Haredi draft issue is the coalition's greatest domestic vulnerability — Shas is at the center of blocking any resolution." },
+  { id:59, name:"United Torah Judaism (UTJ)", type:"Politician", narrative:"Ultra-Orthodox Ashkenazi party representing the Haredi community. Opposes any legislation that would draft Yeshiva students into the military. Supports expansion of religious education funding and maintaining strict Orthodox standards for marriage, conversion, and public life in Israel.", interest:"Absolute protection of Haredi draft exemptions; securing yeshiva funding; blocking any judicial or legislative changes that would erode Orthodox religious authority in Israel. Benefits from content defending religious exemptions, attacking the Supreme Court's rulings on Haredi conscription, or framing secular Israelis as threatening Jewish identity.", mo:"Coalition leverage — the existential red line is draft exemptions; blocking draft law; demanding education budget allocations; coordinating with Shas on religious legislation; threatening no-confidence votes.", comments:"Polling ~7 seats. Like Shas, UTJ is indispensable to Netanyahu's coalition math. The two Haredi parties together provide ~16-17 seats. The conscription issue is their defining political battle — they have threatened to bring down the government over it." },
+  { id:60, name:"Israeli Security Establishment (IDF / Shin Bet / Mossad)", type:"Int'l organization", narrative:"Professional security institutions operating under civilian oversight but with distinct institutional interests. The IDF frames its mission as defending Israeli citizens through military deterrence; Shin Bet focuses on internal security and counterterrorism; Mossad on foreign intelligence and covert operations. All three emphasize professionalism, operational secrecy, and separation of security decisions from political considerations.", interest:"Institutional autonomy from political interference; maintaining professional military decision-making; securing adequate budgets and equipment; the IDF specifically has a strong institutional interest in resolving the Haredi conscription issue — it is a manpower and morale problem. Benefits from content supporting military professionalism, equal conscription, accountability for October 7 intelligence failures, or criticism of political interference in military decisions.", mo:"Classified operations; leaks to trusted journalists when political pressure becomes intolerable; generals' public statements after retirement; IDF Spokesperson communications; Mossad and Shin Bet chiefs' rare public appearances; the security establishment has been notably critical of Netanyahu's war management in ways that have leaked to media.", comments:"The security establishment has been in tension with the Netanyahu government throughout the war — over the hostage deal, over Haredi conscription, over operational decisions in Gaza and Lebanon. Several senior IDF and Shin Bet figures have publicly or semi-publicly criticized the government. This tension is a major theme in Israeli political discourse." },
+  { id:61, name:"Israeli Business & Tech Sector", type:"Int'l organization", narrative:"Israel's business community and startup ecosystem — one of the most developed per-capita in the world. The sector has been severely impacted by the prolonged war through reservist call-ups (affecting tech workers), foreign investment withdrawal, credit rating downgrades, and reputational damage in global markets. Business leaders have become increasingly vocal about the war's economic costs and the need for political stability.", interest:"Ending the war and restoring economic normalcy; resolving the judicial crisis that damaged Israel's rule-of-law reputation with foreign investors; solving the Haredi conscription issue which is seen as an economic and fairness problem; political stability under any government that can attract foreign investment. Benefits from content highlighting economic damage from the war, the cost of Haredi non-contribution to the workforce and military, judicial stability, or the need for a hostage deal to restore normalcy.", mo:"Business lobbying; public statements from chambers of commerce and tech CEOs; threatening to relocate funds abroad; coordinating with protest movement on judicial overhaul opposition; using economic data to argue for ceasefire and political resolution.", comments:"The Israeli tech sector is disproportionately represented among reservists — many startups and companies have been significantly disrupted. Foreign investment dropped sharply after October 7 and again during the judicial overhaul protests. The business community has become an unusual political voice, broadly aligned with the anti-Netanyahu camp on economic and stability grounds." }
+
 ];
 
 // ─────────────────────────────────────────────
@@ -879,7 +1017,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.3.1';
+const APP_VERSION = '2.5.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -1918,6 +2056,42 @@ function deleteEntity(id) {
   toast('Entity deleted.');
 }
 
+function exportEntities() {
+  const entities = getEntities();
+  const json = JSON.stringify(entities, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'wbt-entities-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Entities exported.');
+}
+
+function importEntities(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('File must contain a JSON array');
+      if (!data[0] || typeof data[0].name !== 'string') throw new Error('Invalid entity format');
+      if (!confirm('Replace all ' + getEntities().length + ' entities with ' + data.length + ' entities from file?')) return;
+      saveEntities(data);
+      renderDB();
+      const dbBadge = document.getElementById('db-count-badge');
+      if (dbBadge) dbBadge.textContent = data.length;
+      toast('Imported ' + data.length + ' entities.');
+    } catch(err) {
+      toast('Import failed: ' + err.message);
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
 function toggleAddForm() { document.getElementById('add-form').classList.toggle('open'); }
 
 function addEntity() {
@@ -2107,7 +2281,7 @@ function fetchServerVersion(serverUrl) {
 <div class="bottom-bar">
   <span><span class="status-dot" id="bar-status-dot" style="background:var(--amber)"></span><span id="bar-status-text">Connecting...</span></span>
   <div class="bar-divider"></div>
-  <span>app v<span id="bar-app-ver">2.3.1</span></span>
+  <span>app v<span id="bar-app-ver">2.5.0</span></span>
   <div class="bar-divider"></div>
   <span id="bar-srv-ver">srv —</span>
   <div class="bar-right" style="font-size:10px;color:var(--text3)">Admin</div>

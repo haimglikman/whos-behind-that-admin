@@ -228,7 +228,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.5.0</div>
+      <div class="version-badge" id="version-badge">v2.6.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -521,8 +521,16 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
     <!-- ── DATABASE PAGE ── -->
     <div id="page-database" class="page">
       <div class="page-content">
-      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
-        <div><h1>Entity database</h1><p>Israeli-Palestinian conflict — edit, add, or remove entities</p></div>
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <h1>Entity database</h1>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <p>Israeli-Palestinian conflict — edit, add, or remove entities</p>
+            <span id="db-version-badge" style="font-size:10px;font-weight:700;color:var(--blue);background:var(--blue-dim);border:1px solid rgba(26,107,255,.2);border-radius:99px;padding:2px 9px;font-family:var(--mono)">DB v4.0.0</span>
+            <button class="btn btn-sm" style="font-size:10px;padding:3px 10px" onclick="bumpMinor()" title="Bump minor version (intentional batch update)">↑ minor</button>
+            <button class="btn btn-sm" style="font-size:10px;padding:3px 10px" onclick="bumpMajor()" title="Bump major version (major restructure)">↑ major</button>
+          </div>
+        </div>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn btn-sm" onclick="exportEntities()" title="Download entities as JSON">⬇ Export</button>
           <label class="btn btn-sm" style="cursor:pointer" title="Upload entities JSON">⬆ Import<input type="file" accept=".json" onchange="importEntities(event)" style="display:none"></label>
@@ -1017,7 +1025,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.5.0';
+const APP_VERSION = '2.6.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -1025,7 +1033,50 @@ const APP_VERSION = '2.5.0';
 function getEntities() {
   try { const s = localStorage.getItem('wbt_entities'); return s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULT_ENTITIES)); } catch(e) { return JSON.parse(JSON.stringify(DEFAULT_ENTITIES)); }
 }
-function saveEntities(e) { localStorage.setItem('wbt_entities', JSON.stringify(e)); document.getElementById('db-count').textContent = e.length; }
+function getDbVersion() {
+  try { return JSON.parse(localStorage.getItem('wbt_entity_version') || '"4.0.0"'); } catch(e) { return '4.0.0'; }
+}
+function saveDbVersion(v) {
+  localStorage.setItem('wbt_entity_version', JSON.stringify(v));
+}
+function bumpPatch() {
+  const parts = getDbVersion().split('.').map(Number);
+  parts[2]++;
+  const v = parts.join('.');
+  saveDbVersion(v);
+  return v;
+}
+function bumpMinor() {
+  const parts = getDbVersion().split('.').map(Number);
+  parts[1]++; parts[2] = 0;
+  const v = parts.join('.');
+  saveDbVersion(v);
+  renderDbVersion();
+  toast('DB version bumped to v' + v);
+  return v;
+}
+function bumpMajor() {
+  const parts = getDbVersion().split('.').map(Number);
+  parts[0]++; parts[1] = 0; parts[2] = 0;
+  const v = parts.join('.');
+  saveDbVersion(v);
+  renderDbVersion();
+  toast('DB version bumped to v' + v);
+  return v;
+}
+function renderDbVersion() {
+  const el = document.getElementById('db-version-badge');
+  if (el) el.textContent = 'DB v' + getDbVersion();
+}
+function saveEntities(e) {
+  localStorage.setItem('wbt_entities', JSON.stringify(e));
+  const v = bumpPatch();
+  renderDbVersion();
+  const dbCount = document.getElementById('db-count');
+  if (dbCount) dbCount.textContent = e.length;
+  const dbBadge = document.getElementById('db-count-badge');
+  if (dbBadge) dbBadge.textContent = e.length;
+}
 function getHistory() { try { return JSON.parse(localStorage.getItem('wbt_history') || '[]'); } catch(e) { return []; } }
 function saveHistory(h) { localStorage.setItem('wbt_history', JSON.stringify(h)); updateHistoryCount(); }
 function getScanStats() { try { return JSON.parse(localStorage.getItem('wbt_scans') || '{"total":0,"last":null}'); } catch(e) { return {total:0,last:null}; } }
@@ -1632,8 +1683,9 @@ function generateScanId(appVer, srvVer, userPrefix) {
   const random = Math.random().toString(36).substring(2,6).toUpperCase();
   const av = (appVer||'?').replace(/\./g,'');
   const sv = (srvVer||'?').replace(/\./g,'');
+  const db = 'DB' + getDbVersion().replace(/\./g,'');
   const user = userPrefix || 'ADMIN';
-  return 'WBT-' + user + '-' + date + '-' + av + '-' + sv + '-' + random;
+  return 'WBT-' + user + '-' + date + '-' + av + '-' + sv + '-' + db + '-' + random;
 }
 
 // Migrate legacy localStorage entries to add missing fields
@@ -2058,15 +2110,16 @@ function deleteEntity(id) {
 
 function exportEntities() {
   const entities = getEntities();
-  const json = JSON.stringify(entities, null, 2);
+  const payload = { _version: getDbVersion(), _exported: new Date().toISOString().slice(0,10), entities: entities };
+  const json = JSON.stringify(payload, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'wbt-entities-' + new Date().toISOString().slice(0,10) + '.json';
+  a.download = 'wbt-entities-' + getDbVersion() + '-' + new Date().toISOString().slice(0,10) + '.json';
   a.click();
   URL.revokeObjectURL(url);
-  toast('Entities exported.');
+  toast('Entities exported (DB v' + getDbVersion() + ').');
 }
 
 function importEntities(event) {
@@ -2076,14 +2129,25 @@ function importEntities(event) {
   reader.onload = function(e) {
     try {
       const data = JSON.parse(e.target.result);
-      if (!Array.isArray(data)) throw new Error('File must contain a JSON array');
-      if (!data[0] || typeof data[0].name !== 'string') throw new Error('Invalid entity format');
-      if (!confirm('Replace all ' + getEntities().length + ' entities with ' + data.length + ' entities from file?')) return;
-      saveEntities(data);
+      // Support both {_version, entities:[...]} and plain [...] formats
+      const entities = Array.isArray(data) ? data : data.entities;
+      const version = data._version || null;
+      if (!Array.isArray(entities)) throw new Error('File must contain an entities array');
+      if (!entities[0] || typeof entities[0].name !== 'string') throw new Error('Invalid entity format');
+      const msg = 'Replace all ' + getEntities().length + ' entities with ' + entities.length + ' entities from file?' +
+        (version ? '\n\nFile DB version: v' + version : '');
+      if (!confirm(msg)) { event.target.value = ''; return; }
+      localStorage.setItem('wbt_entities', JSON.stringify(entities));
+      // Set version from file, then bump patch to record the import
+      if (version) saveDbVersion(version);
+      bumpPatch();
+      renderDbVersion();
       renderDB();
+      const dbCount = document.getElementById('db-count');
+      if (dbCount) dbCount.textContent = entities.length;
       const dbBadge = document.getElementById('db-count-badge');
-      if (dbBadge) dbBadge.textContent = data.length;
-      toast('Imported ' + data.length + ' entities.');
+      if (dbBadge) dbBadge.textContent = entities.length;
+      toast('Imported ' + entities.length + ' entities (DB v' + getDbVersion() + ').');
     } catch(err) {
       toast('Import failed: ' + err.message);
     }
@@ -2233,6 +2297,7 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('db-count').textContent = entities.length;
   const dbBadge = document.getElementById('db-count-badge');
   if (dbBadge) dbBadge.textContent = entities.length;
+  renderDbVersion();
   document.getElementById('version-badge').textContent = 'v' + APP_VERSION;
   updateHistoryCount();
   updateScanCounter();
@@ -2281,7 +2346,7 @@ function fetchServerVersion(serverUrl) {
 <div class="bottom-bar">
   <span><span class="status-dot" id="bar-status-dot" style="background:var(--amber)"></span><span id="bar-status-text">Connecting...</span></span>
   <div class="bar-divider"></div>
-  <span>app v<span id="bar-app-ver">2.5.0</span></span>
+  <span>app v<span id="bar-app-ver">2.6.0</span></span>
   <div class="bar-divider"></div>
   <span id="bar-srv-ver">srv —</span>
   <div class="bar-right" style="font-size:10px;color:var(--text3)">Admin</div>

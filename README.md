@@ -1,5 +1,25 @@
 ## Changelog
 
+### v2.5.0 (admin) | Server: v1.12.4 | Client: v1.7.0
+- Entity database: Import/Export buttons — download entities as JSON, upload to replace. Entity management no longer requires code changes.
+- Entity: Ben Gvir & Smotrich split into two separate entities (id:28 Otzma Yehudit, id:28 Religious Zionism)
+- Entity: Israeli Opposition Bloc renamed to Naftali Bennett / Bennett 2026 (Lapid joins his list)
+- Entity: Israeli Left / Peace Camp replaced by Yair Golan / The Democrats
+- Entity: Gantz updated to reflect diminished opposition role
+- Entity: Netanyahu/Likud updated with 2026 election context
+- Entity added: Gadi Eisenkot / Yashar! (id:57)
+- Entity added: Shas / Aryeh Deri (id:58)
+- Entity added: United Torah Judaism / UTJ (id:59)
+- Entity added: Israeli Security Establishment / IDF / Shin Bet / Mossad (id:60)
+- Entity added: Israeli Business & Tech Sector (id:61)
+
+### v2.4.1 (admin) | Server: v1.12.4 | Client: v1.7.0
+- In-app changelog updated with all versions from v1.8.1 through v2.4.0 — was last updated at v1.8.0
+
+### v2.4.0 (admin) | Server: v1.12.4 | Client: v1.7.0
+- Added Legal & Disclaimer section to About & Setup tab
+- Updated contact email to contact@whosbehindthat.com
+
 ### v2.3.1 — bug fix (admin) | Server: v1.12.2 | Client: v1.5.1
 - X posts now stored with proper username URL (x.com/username/status/...) instead of /i/status/ format from mobile share sheet
 

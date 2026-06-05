@@ -228,7 +228,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.6.0</div>
+      <div class="version-badge" id="version-badge">v2.7.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1025,7 +1025,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.6.0';
+const APP_VERSION = '2.7.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -1147,7 +1147,7 @@ function showPage(name, el) {
   if (el) el.classList.add('active');
   if (name === 'database') renderDB();
   if (name === 'history') { renderHistory(); syncHistoryFromServer(); }
-  if (name === 'actors') renderActors();
+  if (name === 'actors') { renderActors(); syncActorsFromServer(); }
   // Update browser history for back/forward support
   if (history.state && history.state.page !== name) {
     history.pushState({ page: name }, '', '#' + name);
@@ -1175,7 +1175,7 @@ window.addEventListener('popstate', function(e) {
   if (el) el.classList.add('active');
   if (name === 'database') renderDB();
   if (name === 'history') { renderHistory(); syncHistoryFromServer(); }
-  if (name === 'actors') renderActors();
+  if (name === 'actors') { renderActors(); syncActorsFromServer(); }
 });
 
 // ─────────────────────────────────────────────
@@ -1984,7 +1984,7 @@ function renderHistoryList(entries) {
     const d = new Date(e.ts);
     const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     const scanId = e.scanId || ('WBT-legacy-' + e.id);
-    const platformIcon = {x:'𝕏',instagram:'📷',facebook:'f',unknown:'🔗'}[e.platform||'unknown']||'🔗';
+    const platformIcon = {x:'𝕏',instagram:'📷',facebook:'f',news:'📰',unknown:'🔗'}[e.platform||'unknown']||'🔗';
 
     // Failed scan — distinct red styling
     if (e.failed) {
@@ -2201,6 +2201,7 @@ function dismissActorPrompt() {
 async function researchActor() {
   if (!pendingActorHandle) return;
   const handle = pendingActorHandle;
+  const actorScanId = generateScanId(APP_VERSION, _cachedSrvVersion || '?', 'ADMIN');
   document.getElementById('actor-prompt').style.display = 'none';
   const card = document.getElementById('actor-result-card');
   const body = document.getElementById('actor-result-body');
@@ -2212,23 +2213,22 @@ async function researchActor() {
     const res = await fetch(serverUrl + '/research-actor', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({handle: handle, url: pendingActorUrl})
+      body: JSON.stringify({ handle, url: pendingActorUrl, source: 'admin', actorScanId, appVersion: APP_VERSION })
     });
     if (!res.ok) { const e = await res.json().catch(function(){return {};}); throw new Error(e.error || 'Server error'); }
     const data = await res.json();
-    const actor = data.actor;
     const actors = getActors();
-    actors[actorKey(handle)] = Object.assign({}, actor, {handle: handle, ts: new Date().toISOString()});
+    actors[actorKey(handle)] = Object.assign({}, data.actor, { handle, ts: new Date().toISOString(), publication: data.publication, scanId: actorScanId, source: 'admin', url: pendingActorUrl });
     saveActors(actors);
-    renderActorCard(body, actor);
-    toast('Actor profile saved.');
+    renderActorCard(body, data.actor, data.publication);
+    toast('Actor profile saved · ' + actorScanId);
   } catch(e) {
     body.innerHTML = '<div style="font-size:12px;color:var(--amber)">Could not research actor: ' + escHtml(e.message) + '</div>';
   }
   pendingActorHandle = null;
 }
 
-function renderActorCard(container, actor) {
+function renderActorCard(container, actor, publication) {
   container.innerHTML =
     '<div style="margin-bottom:6px">' +
       '<div class="actor-name">' + escHtml(actor.name || actor.handle || 'Unknown') + '</div>' +
@@ -2238,7 +2238,42 @@ function renderActorCard(container, actor) {
     (actor.handles && actor.handles.length > 0 ?
       '<div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;margin-top:8px">Known accounts & websites</div>' +
       '<div class="actor-handles">' + actor.handles.map(function(h){ return '<span class="actor-handle-tag">' + escHtml(h) + '</span>'; }).join('') + '</div>'
-    : '');
+    : '') +
+    (publication ? renderAdminPublicationCard(publication) : '');
+}
+
+async function syncActorsFromServer() {
+  const serverUrl = getServerUrl();
+  if (!serverUrl) return;
+  try {
+    const res = await fetch(serverUrl + '/actors/list');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.actors) return;
+    const actors = getActors();
+    data.actors.forEach(function(a) {
+      const key = (a.handle||'').toLowerCase().replace(/^@/,'');
+      if (!actors[key] || new Date(a.ts) > new Date(actors[key].ts||0)) {
+        actors[key] = {
+          name: a.actorData && a.actorData.name || a.handle,
+          handle: a.handle,
+          bio: a.actorData && a.actorData.bio || '',
+          location: a.actorData && a.actorData.location || '',
+          handles: a.actorData && a.actorData.handles || [],
+          publication: a.publicationData || null,
+          ts: a.ts,
+          scanId: a.id,
+          source: a.source || 'admin',
+          deviceId: a.deviceId || null,
+          appVersion: a.appVersion || '',
+          url: a.url || ''
+        };
+      }
+    });
+    localStorage.setItem('wbt_actors', JSON.stringify(actors));
+    renderActors();
+    updateActorsCount();
+  } catch(e) { console.warn('Actor sync failed:', e.message); }
 }
 
 function renderActors() {
@@ -2252,22 +2287,39 @@ function renderActors() {
   list.innerHTML = keys.map(function(k) {
     const a = actors[k];
     const d = a.ts ? new Date(a.ts) : null;
+    const srcBadge = '<span class="source-badge ' + (a.source||'admin') + '">' + (a.source||'admin') + '</span>';
+    const userBadge = (a.source==='client' && a.deviceId) ? '<span class="user-badge">' + escHtml(a.deviceId) + '</span>' : '';
+    const scanIdBadge = a.scanId ? '<span class="scan-id">' + escHtml(a.scanId) + '</span>' : '';
     return '<div class="actor-card">' +
+      '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
+        scanIdBadge + srcBadge + userBadge +
+        (d ? '<span style="font-size:10px;color:var(--text3);margin-left:auto">' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</span>' : '') +
+      '</div>' +
       '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
         '<div style="flex:1">' +
           '<div class="actor-name">' + escHtml(a.name || a.handle) + '</div>' +
-          '<div class="actor-handle">@' + escHtml(a.handle) + '</div>' +
+          '<div class="actor-handle">@' + escHtml(a.handle) + (a.url ? ' — <a href="' + escHtml(a.url) + '" target="_blank" style="color:var(--blue);font-size:10px">source article ↗</a>' : '') + '</div>' +
           (a.location ? '<div class="actor-location">📍 ' + escHtml(a.location) + '</div>' : '') +
           '<div class="actor-bio">' + escHtml(a.bio || '') + '</div>' +
           (a.handles && a.handles.length > 0 ? '<div class="actor-handles" style="margin-top:8px">' + a.handles.map(function(h){ return '<span class="actor-handle-tag">' + escHtml(h) + '</span>'; }).join('') + '</div>' : '') +
+          (a.publication ? renderAdminPublicationCard(a.publication) : '') +
         '</div>' +
-        '<div style="text-align:right;flex-shrink:0">' +
-          (d ? '<div style="font-size:10px;color:var(--text3)">' + d.toLocaleDateString() + '</div>' : '') +
-          '<button class="btn btn-sm btn-danger" style="margin-top:8px" onclick="deleteActor(\'' + k + '\')">Delete</button>' +
+        '<div style="flex-shrink:0">' +
+          '<button class="btn btn-sm btn-danger" onclick="deleteActor(\'' + k + '\')">Delete</button>' +
         '</div>' +
       '</div>' +
     '</div>';
   }).join('');
+}
+
+function renderAdminPublicationCard(pub) {
+  return '<div style="margin-top:12px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm)">' +
+    '<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Publication</div>' +
+    '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">' + escHtml(pub.name||'') + '</div>' +
+    '<div style="font-size:11px;color:var(--text3);margin-bottom:5px">' + [pub.type,pub.country,pub.language,pub.founded?'est. '+pub.founded:null].filter(Boolean).join(' · ') + '</div>' +
+    (pub.ownership ? '<div style="font-size:11px;color:var(--text2);margin-bottom:4px"><strong>Ownership:</strong> ' + escHtml(pub.ownership) + '</div>' : '') +
+    '<div style="font-size:11px;color:var(--text2);line-height:1.6">' + escHtml(pub.agenda||'') + '</div>' +
+  '</div>';
 }
 
 function deleteActor(key) {
@@ -2346,7 +2398,7 @@ function fetchServerVersion(serverUrl) {
 <div class="bottom-bar">
   <span><span class="status-dot" id="bar-status-dot" style="background:var(--amber)"></span><span id="bar-status-text">Connecting...</span></span>
   <div class="bar-divider"></div>
-  <span>app v<span id="bar-app-ver">2.6.0</span></span>
+  <span>app v<span id="bar-app-ver">2.7.0</span></span>
   <div class="bar-divider"></div>
   <span id="bar-srv-ver">srv —</span>
   <div class="bar-right" style="font-size:10px;color:var(--text3)">Admin</div>

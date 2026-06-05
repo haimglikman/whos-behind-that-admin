@@ -1,5 +1,11 @@
 ## Changelog
 
+### v2.7.0 (admin) | Server: v1.13.0 | Client: v1.8.0
+- Actors tab now syncs from server DB — client actor searches visible in admin with source badge, user badge, scan ID, and source article link
+- Publication card shown for actors researched from news articles
+- News platform icon (📰) in history
+- Actor research generates a proper scan ID
+
 ### v2.6.0 (admin) | Server: v1.12.4 | Client: v1.7.0
 - Entity DB versioning: semantic versioning (major.minor.patch) shown as badge in Entity Database tab
 - Patch auto-increments on every save, edit, add, delete, or import

@@ -1,5 +1,8 @@
 ## Changelog
 
+### v2.8.1 — bug fix (admin) | Server: v1.15.0 | Client: v1.9.3
+- Fixed all tab content starting from bottom half of screen — main content wrapper was using overflow:auto which caused flex children to miscalculate their height
+
 ### v2.8.0 (admin) | Server: v1.15.0 | Client: v1.9.1
 - Token counter in sidebar: Post scans, Actor scans, Total, Est. cost
 - Editable input/output token rates ($/M) stored in localStorage — defaults to current Sonnet pricing

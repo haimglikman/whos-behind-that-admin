@@ -228,7 +228,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.8.1</div>
+      <div class="version-badge" id="version-badge">v2.8.2</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -873,8 +873,20 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
       </div><!-- end page-content -->
     </div><!-- end page-actors -->
 
-  </div>
+  </div><!-- end main wrapper -->
+</div><!-- end layout -->
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <span><span class="status-dot" id="bar-status-dot"></span><span id="bar-status-text">Connecting...</span></span>
+  <div class="bar-divider"></div>
+  <span>app v<span id="bar-app-ver">2.8.2</span></span>
+  <div class="bar-divider"></div>
+  <span id="bar-srv-ver">srv —</span>
+  <div class="bar-right" style="font-size:10px;color:var(--text3)">Admin</div>
 </div>
+
+</div><!-- end shell -->
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1052,7 +1064,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.8.1';
+const APP_VERSION = '2.8.2';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -2492,16 +2504,6 @@ function fetchServerVersion(serverUrl) {
     });
 }
 </script>
-
-<!-- BOTTOM BAR -->
-<div class="bottom-bar">
-  <span><span class="status-dot" id="bar-status-dot" style="background:var(--amber)"></span><span id="bar-status-text">Connecting...</span></span>
-  <div class="bar-divider"></div>
-  <span>app v<span id="bar-app-ver">2.8.1</span></span>
-  <div class="bar-divider"></div>
-  <span id="bar-srv-ver">srv —</span>
-  <div class="bar-right" style="font-size:10px;color:var(--text3)">Admin</div>
-</div>
 
 </body>
 </html>

@@ -1,5 +1,9 @@
 ## Changelog
 
+### v2.8.2 — bug fix (admin) | Server: v1.15.0 | Client: v1.9.3
+- Fixed all tabs starting from bottom half — bottom bar was outside the shell div causing incorrect height calculation
+- Fixed server status dot showing yellow instead of green — hardcoded amber color removed
+
 ### v2.8.1 — bug fix (admin) | Server: v1.15.0 | Client: v1.9.3
 - Fixed all tab content starting from bottom half of screen — main content wrapper was using overflow:auto which caused flex children to miscalculate their height
 

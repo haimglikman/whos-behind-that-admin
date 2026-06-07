@@ -1,5 +1,10 @@
 ## Changelog
 
+### v2.8.0 (admin) | Server: v1.15.0 | Client: v1.9.1
+- Token counter in sidebar: Post scans, Actor scans, Total, Est. cost
+- Editable input/output token rates ($/M) stored in localStorage — defaults to current Sonnet pricing
+- Token badge per history entry showing tokens used and estimated cost for that scan
+
 ### v2.7.0 (admin) | Server: v1.13.0 | Client: v1.8.0
 - Actors tab now syncs from server DB — client actor searches visible in admin with source badge, user badge, scan ID, and source article link
 - Publication card shown for actors researched from news articles

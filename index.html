@@ -228,7 +228,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.7.0</div>
+      <div class="version-badge" id="version-badge">v2.8.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -276,9 +276,36 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
       </div>
       <div class="scan-counter-sub" id="scan-last"></div>
     </div>
+    <!-- Token counter -->
+    <div class="scan-counter-box" style="margin-top:0">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Tokens used</div>
+      <div class="scan-counter-row">
+        <div class="scan-counter-label">Post scans</div>
+        <div class="scan-counter-num" id="token-post" style="font-size:13px;color:var(--text2)">—</div>
+      </div>
+      <div class="scan-counter-row">
+        <div class="scan-counter-label">Actor scans</div>
+        <div class="scan-counter-num" id="token-actor" style="font-size:13px;color:var(--text2)">—</div>
+      </div>
+      <div class="scan-counter-row" style="border-top:1px solid var(--border);padding-top:6px;margin-top:4px">
+        <div class="scan-counter-label">Total</div>
+        <div class="scan-counter-num" id="token-total" style="font-size:13px;color:var(--text)">—</div>
+      </div>
+      <div class="scan-counter-row">
+        <div class="scan-counter-label">Est. cost</div>
+        <div class="scan-counter-num" id="token-cost" style="font-size:13px;color:var(--green)">—</div>
+      </div>
+      <div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">
+        <div style="font-size:9px;color:var(--text3);font-weight:600;margin-bottom:4px">RATES ($/M tokens)</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:9px;color:var(--text3)">In:</span>
+          <input type="number" id="rate-input" step="0.01" style="width:52px;font-size:10px;padding:2px 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg2);color:var(--text);font-family:var(--mono)" oninput="saveRates();updateTokenDisplay()" />
+          <span style="font-size:9px;color:var(--text3)">Out:</span>
+          <input type="number" id="rate-output" step="0.01" style="width:52px;font-size:10px;padding:2px 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg2);color:var(--text);font-family:var(--mono)" oninput="saveRates();updateTokenDisplay()" />
+        </div>
+      </div>
+    </div>
     <div class="sidebar-divider"></div>
-    <div class="sidebar-section">
-      <div class="sidebar-label">Database</div>
       <div class="db-badge">
         <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><ellipse cx="5.5" cy="3" rx="4" ry="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 3v2.5c0 .83 1.79 1.5 4 1.5s4-.67 4-1.5V3" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 5.5V8c0 .83 1.79 1.5 4 1.5s4-.67 4-1.5V5.5" stroke="currentColor" stroke-width="1.1"/></svg>
         <span class="badge-count" id="db-count-badge">56</span> entities
@@ -1025,7 +1052,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.7.0';
+const APP_VERSION = '2.8.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -1119,6 +1146,70 @@ function updateServerBar(url) {
 function updateHistoryCount() {
   document.getElementById('history-count').textContent = getHistory().length;
 }
+// ─────────────────────────────────────────────
+// TOKEN TRACKING
+// ─────────────────────────────────────────────
+function getRates() {
+  try { return JSON.parse(localStorage.getItem('wbt_rates') || '{"input":3,"output":15}'); }
+  catch(e) { return { input: 3, output: 15 }; }
+}
+function saveRates() {
+  const inp = parseFloat(document.getElementById('rate-input').value) || 3;
+  const out = parseFloat(document.getElementById('rate-output').value) || 15;
+  localStorage.setItem('wbt_rates', JSON.stringify({ input: inp, output: out }));
+}
+function initRates() {
+  const r = getRates();
+  const inEl = document.getElementById('rate-input');
+  const outEl = document.getElementById('rate-output');
+  if (inEl) inEl.value = r.input;
+  if (outEl) outEl.value = r.output;
+}
+function formatTokens(n) {
+  if (!n) return '0';
+  if (n >= 1000000) return (n/1000000).toFixed(2) + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1) + 'k';
+  return String(n);
+}
+function calcCost(inTok, outTok) {
+  const r = getRates();
+  return ((inTok / 1000000) * r.input) + ((outTok / 1000000) * r.output);
+}
+
+let _tokenStats = null;
+
+function updateTokenDisplay() {
+  if (!_tokenStats) return;
+  const s = _tokenStats;
+  const postIn = (s.post?.admin?.in || 0) + (s.post?.client?.in || 0);
+  const postOut = (s.post?.admin?.out || 0) + (s.post?.client?.out || 0);
+  const actorIn = s.actor?.in || 0;
+  const actorOut = s.actor?.out || 0;
+  const totalIn = postIn + actorIn;
+  const totalOut = postOut + actorOut;
+  const cost = calcCost(totalIn, totalOut);
+
+  const postEl = document.getElementById('token-post');
+  const actorEl = document.getElementById('token-actor');
+  const totalEl = document.getElementById('token-total');
+  const costEl = document.getElementById('token-cost');
+  if (postEl) postEl.textContent = formatTokens(postIn + postOut);
+  if (actorEl) actorEl.textContent = formatTokens(actorIn + actorOut);
+  if (totalEl) totalEl.textContent = formatTokens(totalIn + totalOut);
+  if (costEl) costEl.textContent = '$' + cost.toFixed(3);
+}
+
+async function fetchTokenStats() {
+  const serverUrl = getServerUrl();
+  if (!serverUrl) return;
+  try {
+    const res = await fetch(serverUrl + '/stats');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.stats) { _tokenStats = data.stats; updateTokenDisplay(); }
+  } catch(e) { console.warn('Stats fetch failed:', e.message); }
+}
+
 function updateScanCounter() {
   const s = getScanStats();
   document.getElementById('scan-total').textContent = s.total || 0;
@@ -2009,6 +2100,11 @@ function renderHistoryList(entries) {
     const hasFullResult = !!e.fullResult;
     const srcBadge = '<span class="source-badge ' + (e.source||'admin') + '">' + (e.source||'admin') + '</span>';
     const userBadge = (e.source==='client' && e.deviceId) ? '<span class="user-badge">' + escHtml(e.deviceId) + '</span>' : '';
+    const tokenBadge = (e.inputTokens || e.outputTokens)
+      ? '<span style="font-size:9px;font-family:var(--mono);color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:99px;padding:1px 7px">' +
+        formatTokens((e.inputTokens||0)+(e.outputTokens||0)) + ' tokens' +
+        ' · $' + calcCost(e.inputTokens||0, e.outputTokens||0).toFixed(3) + '</span>'
+      : '';
     return '<div class="history-item">' +
       '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px">' +
         '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
@@ -2016,6 +2112,7 @@ function renderHistoryList(entries) {
           '<span class="scan-id">' + escHtml(scanId) + '</span>' +
           srcBadge +
           userBadge +
+          tokenBadge +
         '</div>' +
         '<span class="scan-version">' + escHtml(e.appVersion||'?') + ' / srv ' + escHtml(e.serverVersion||'?') + '</span>' +
       '</div>' +
@@ -2356,6 +2453,8 @@ window.addEventListener('DOMContentLoaded', function() {
   updateActorsCount();
   fetchServerVersion(serverUrl);
   migrateLocalHistory();
+  initRates();
+  fetchTokenStats();
   // Handle initial hash navigation + init history state
   const initPage = location.hash.replace('#','') || 'analyze';
   if (initPage !== 'analyze' && document.getElementById('page-' + initPage)) {
@@ -2398,7 +2497,7 @@ function fetchServerVersion(serverUrl) {
 <div class="bottom-bar">
   <span><span class="status-dot" id="bar-status-dot" style="background:var(--amber)"></span><span id="bar-status-text">Connecting...</span></span>
   <div class="bar-divider"></div>
-  <span>app v<span id="bar-app-ver">2.7.0</span></span>
+  <span>app v<span id="bar-app-ver">2.8.0</span></span>
   <div class="bar-divider"></div>
   <span id="bar-srv-ver">srv —</span>
   <div class="bar-right" style="font-size:10px;color:var(--text3)">Admin</div>

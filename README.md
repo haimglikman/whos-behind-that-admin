@@ -1,5 +1,10 @@
 ## Changelog
 
+### v2.9.0 (admin) | Server: v1.15.0 | Client: v1.9.3
+- New Stats tab: admin scans, client scans, actor searches, token usage breakdown, estimated cost
+- Editable token rates ($/M) in Stats tab
+- Sidebar restored to clean state — counters moved off sidebar entirely
+
 ### v2.8.2 — bug fix (admin) | Server: v1.15.0 | Client: v1.9.3
 - Fixed all tabs starting from bottom half — bottom bar was outside the shell div causing incorrect height calculation
 - Fixed server status dot showing yellow instead of green — hardcoded amber color removed

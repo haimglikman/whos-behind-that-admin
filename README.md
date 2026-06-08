@@ -1,5 +1,17 @@
 ## Changelog
 
+### v2.9.3 — bug fix (admin) | Server: v1.15.0 | Client: v1.9.3
+- Fixed Actors and Stats pages appearing on right side — extra closing </div> in About page was prematurely closing the main wrapper, pushing subsequent pages outside the layout
+
+### v2.9.2 — bug fix (admin) | Server: v1.15.0 | Client: v1.9.3
+- Fixed Actors and Stats pages content confined to right side — page and page-content now explicitly stretch to full width **FAILED FIX**
+
+### v2.9.1 — bug fix (admin) | Server: v1.15.0 | Client: v1.9.3
+- Removed duplicate scan counters and DB badge from sidebar — already in Stats tab
+- Fixed Actors and Stats pages showing content only on right side — page-content now fills full width
+- Actors tab now shows all scans per actor from server DB, including all client searches — previously only showed one entry per handle
+- About & Setup changelog updated through v2.9.0
+
 ### v2.9.0 (admin) | Server: v1.15.0 | Client: v1.9.3
 - New Stats tab: admin scans, client scans, actor searches, token usage breakdown, estimated cost
 - Editable token rates ($/M) in Stats tab

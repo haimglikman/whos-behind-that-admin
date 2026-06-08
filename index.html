@@ -49,9 +49,9 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
 .sidebar-divider{height:1px;background:var(--border);margin:4px 14px 16px}
 .db-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--blue);background:var(--blue-dim);border:1px solid rgba(26,107,255,.2);border-radius:99px;padding:3px 10px;font-weight:700}
 .badge-count{font-family:var(--mono);font-weight:700}
-.page{display:none;flex:1;overflow:auto}
-.page.active{display:flex;flex-direction:column}
-.page-content{padding:24px 28px;flex:1}
+.page{display:none;flex:1;overflow:auto;width:100%}
+.page.active{display:block;width:100%}
+.page-content{padding:24px 28px;width:100%;box-sizing:border-box}
 .page-header{margin-bottom:20px}
 .page-header h1{font-size:20px;font-weight:700;color:var(--text);margin-bottom:3px}
 .page-header p{font-size:12px;color:var(--text3);font-weight:500}
@@ -228,7 +228,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.9.0</div>
+      <div class="version-badge" id="version-badge">v2.9.3</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -267,31 +267,10 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         Stats
       </button>
     </div>
-    <div class="sidebar-divider"></div>
-    <!-- Scan counters -->
-    <div class="scan-counter-box">
-      <div class="scan-counter-row">
-        <div class="scan-counter-label">Admin scans</div>
-        <div class="scan-counter-num" id="scan-total">0</div>
-      </div>
-      <div class="scan-counter-row">
-        <div class="scan-counter-label">Client scans</div>
-        <div class="scan-counter-num" id="scan-client-total" style="color:var(--gold)">0</div>
-      </div>
-      <div class="scan-counter-sub" id="scan-last"></div>
-    </div>
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-section">
-      <div class="sidebar-label">Database</div>
-      <div class="db-badge">
-        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><ellipse cx="5.5" cy="3" rx="4" ry="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 3v2.5c0 .83 1.79 1.5 4 1.5s4-.67 4-1.5V3" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 5.5V8c0 .83 1.79 1.5 4 1.5s4-.67 4-1.5V5.5" stroke="currentColor" stroke-width="1.1"/></svg>
-        <span class="badge-count" id="db-count-badge">56</span> entities
-      </div>
-    </div>
   </nav>
 
   <!-- MAIN CONTENT -->
-  <div class="main" style="flex:1;overflow:auto;display:flex;flex-direction:column">
+  <div class="main" style="flex:1;overflow:auto;min-width:0">
 
     <!-- ── ANALYZE PAGE ── -->
     <div id="page-analyze" class="page active">
@@ -577,6 +556,66 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <h2>Changelog</h2>
 
           <div class="changelog-item">
+            <div class="changelog-ver">v2.9.0</div>
+            <div class="changelog-date">Current version</div>
+            <ul>
+              <li><strong>Stats tab:</strong> Dedicated page for admin/client scan counts, token usage breakdown, and estimated cost with editable rates.</li>
+              <li><strong>Sidebar cleaned up:</strong> Scan counters and DB badge moved to Stats tab.</li>
+              <li><strong>Actors tab:</strong> Now shows all actor searches (all scan IDs) from server DB, including client searches. Previously only showed one entry per handle.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.8.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Token tracking:</strong> All Claude API calls tracked. Token usage and estimated cost visible in sidebar (moved to Stats in v2.9.0).</li>
+              <li><strong>Editable token rates:</strong> Input/output rates ($/M) configurable.</li>
+              <li><strong>Token badge per history entry:</strong> Shows tokens used and estimated cost for each scan.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.7.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>News website support:</strong> Analyze articles from Ynet, Haaretz, BBC, NYT, Al Jazeera, and 60+ other outlets.</li>
+              <li><strong>Publication research:</strong> Actor research on news articles now profiles both the author and the publication (ownership, editorial line, agenda).</li>
+              <li><strong>Actors tab server sync:</strong> Client actor searches visible in admin with source badge, user badge, and scan ID.</li>
+              <li><strong>News platform icon (📰):</strong> Added to history entries.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.6.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Entity DB versioning:</strong> Semantic versioning (major.minor.patch) shown as badge in Entity Database tab.</li>
+              <li><strong>Auto-increment:</strong> Patch version increments on every save, edit, add, delete, or import.</li>
+              <li><strong>Minor/Major bump buttons:</strong> For intentional restructures.</li>
+              <li><strong>DB version in scan IDs:</strong> WBT-ADMIN-{date}-{appVer}-{srvVer}-DB{version}-{random}.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.5.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Entity database restructured for 2026 elections:</strong> Ben Gvir and Smotrich split into separate entities; Opposition Bloc renamed to Bennett 2026; Israeli Left replaced by Golan/Democrats; Gantz updated.</li>
+              <li><strong>New entities:</strong> Eisenkot/Yashar!, Shas/Deri, UTJ, Israeli Security Establishment, Israeli Business & Tech Sector.</li>
+              <li><strong>Import/Export:</strong> Entity database can now be exported as JSON and imported — no code deployment needed for entity changes.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.4.1</div>
+            <div class="changelog-date">Previous version — bug fix</div>
+            <ul>
+              <li><strong>In-app changelog updated:</strong> All versions from v1.8.1 through v2.4.0 added — was last updated at v1.8.0.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
             <div class="changelog-ver">v2.4.0</div>
             <div class="changelog-date">Previous version</div>
             <ul>
@@ -821,7 +860,6 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <div class="step-card"><div class="step-num">11</div><div class="step-body"><h4>Update package.json</h4><p>Upload the new <code>package.json</code> to your <code>whos-behind-that-server</code> GitHub repo — it now includes the <code>pg</code> database driver. The table is created automatically on first server start.</p></div></div>
           <div class="step-card"><div class="step-num">12</div><div class="step-body"><h4>Verify</h4><p>Visit your Render server URL in a browser. You should see <code>"db": true</code> in the response JSON, confirming the database is connected. All scans will now be shared across all users.</p></div></div>
         </div>
-      </div>
 
       <div style="margin-top:8px">
         <div class="card-label" style="margin-bottom:12px">Legal & disclaimer</div>
@@ -927,7 +965,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
 <div class="bottom-bar">
   <span><span class="status-dot warn" id="bar-status-dot"></span><span id="bar-status-text">Connecting...</span></span>
   <div class="bar-divider"></div>
-  <span>app v<span id="bar-app-ver">2.9.0</span></span>
+  <span>app v<span id="bar-app-ver">2.9.3</span></span>
   <div class="bar-divider"></div>
   <span id="bar-srv-ver">srv —</span>
   <div class="bar-right" style="font-size:10px;color:var(--text3)">Admin</div>
@@ -1110,7 +1148,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.9.0';
+const APP_VERSION = '2.9.3';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -1176,7 +1214,8 @@ function getServerUrl() { return localStorage.getItem('wbt_server_url') || 'http
 function getActors() { try { return JSON.parse(localStorage.getItem('wbt_actors') || '{}'); } catch(e) { return {}; } }
 function saveActors(a) { localStorage.setItem('wbt_actors', JSON.stringify(a)); updateActorsCount(); }
 function updateActorsCount() {
-  document.getElementById('actors-count').textContent = Object.keys(getActors()).length;
+  const count = Math.max(getActorsList().length, Object.keys(getActors()).length);
+  document.getElementById('actors-count').textContent = count;
 }
 function actorKey(handle) { return (handle||'').toLowerCase().replace(/[@\s]/g,''); }
 
@@ -2437,46 +2476,63 @@ async function syncActorsFromServer() {
     if (!res.ok) return;
     const data = await res.json();
     if (!data.actors) return;
-    const actors = getActors();
-    data.actors.forEach(function(a) {
-      const key = (a.handle||'').toLowerCase().replace(/^@/,'');
-      if (!actors[key] || new Date(a.ts) > new Date(actors[key].ts||0)) {
-        actors[key] = {
-          name: a.actorData && a.actorData.name || a.handle,
-          handle: a.handle,
-          bio: a.actorData && a.actorData.bio || '',
-          location: a.actorData && a.actorData.location || '',
-          handles: a.actorData && a.actorData.handles || [],
-          publication: a.publicationData || null,
-          ts: a.ts,
-          scanId: a.id,
-          source: a.source || 'admin',
-          deviceId: a.deviceId || null,
-          appVersion: a.appVersion || '',
-          url: a.url || ''
-        };
-      }
+    // Store as array keyed by scanId so all searches are preserved
+    const actorsList = data.actors.map(function(a) {
+      return {
+        scanId: a.id,
+        handle: a.handle,
+        name: (a.actorData && a.actorData.name) || a.handle,
+        bio: (a.actorData && a.actorData.bio) || '',
+        location: (a.actorData && a.actorData.location) || '',
+        handles: (a.actorData && a.actorData.handles) || [],
+        publication: a.publicationData || null,
+        ts: a.ts,
+        source: a.source || 'admin',
+        deviceId: a.deviceId || null,
+        appVersion: a.appVersion || '',
+        url: a.url || ''
+      };
     });
-    localStorage.setItem('wbt_actors', JSON.stringify(actors));
+    localStorage.setItem('wbt_actors_list', JSON.stringify(actorsList));
     renderActors();
     updateActorsCount();
   } catch(e) { console.warn('Actor sync failed:', e.message); }
 }
 
+function getActorsList() {
+  try { return JSON.parse(localStorage.getItem('wbt_actors_list') || '[]'); } catch(e) { return []; }
+}
+
 function renderActors() {
-  const actors = getActors();
   const list = document.getElementById('actors-list');
-  const keys = Object.keys(actors);
-  if (keys.length === 0) {
+  // Try server list first, fall back to legacy localStorage object
+  const actorsList = getActorsList();
+  const legacyActors = getActors();
+  const legacyKeys = Object.keys(legacyActors);
+
+  if (actorsList.length === 0 && legacyKeys.length === 0) {
     list.innerHTML = '<div class="no-actors">No actors profiled yet. Research an actor after analyzing a post.</div>';
     return;
   }
-  list.innerHTML = keys.map(function(k) {
-    const a = actors[k];
+
+  // Merge: server list takes priority, add any local-only entries not in server list
+  const serverScanIds = new Set(actorsList.map(function(a){ return a.scanId; }));
+  const allActors = actorsList.slice();
+  legacyKeys.forEach(function(k) {
+    const a = legacyActors[k];
+    if (!serverScanIds.has(a.scanId)) {
+      allActors.push({ scanId: a.scanId, handle: a.handle, name: a.name||a.handle, bio: a.bio||'', location: a.location||'', handles: a.handles||[], publication: a.publication||null, ts: a.ts, source: a.source||'admin', deviceId: a.deviceId||null, url: a.url||'' });
+    }
+  });
+  // Sort by timestamp descending
+  allActors.sort(function(a,b){ return new Date(b.ts) - new Date(a.ts); });
+
+  list.innerHTML = allActors.map(function(a) {
     const d = a.ts ? new Date(a.ts) : null;
     const srcBadge = '<span class="source-badge ' + (a.source||'admin') + '">' + (a.source||'admin') + '</span>';
     const userBadge = (a.source==='client' && a.deviceId) ? '<span class="user-badge">' + escHtml(a.deviceId) + '</span>' : '';
     const scanIdBadge = a.scanId ? '<span class="scan-id">' + escHtml(a.scanId) + '</span>' : '';
+    const safeKey = escHtml((a.scanId||a.handle||'').replace(/'/g,"\\'"));
     return '<div class="actor-card">' +
       '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
         scanIdBadge + srcBadge + userBadge +
@@ -2490,9 +2546,6 @@ function renderActors() {
           '<div class="actor-bio">' + escHtml(a.bio || '') + '</div>' +
           (a.handles && a.handles.length > 0 ? '<div class="actor-handles" style="margin-top:8px">' + a.handles.map(function(h){ return '<span class="actor-handle-tag">' + escHtml(h) + '</span>'; }).join('') + '</div>' : '') +
           (a.publication ? renderAdminPublicationCard(a.publication) : '') +
-        '</div>' +
-        '<div style="flex-shrink:0">' +
-          '<button class="btn btn-sm btn-danger" onclick="deleteActor(\'' + k + '\')">Delete</button>' +
         '</div>' +
       '</div>' +
     '</div>';

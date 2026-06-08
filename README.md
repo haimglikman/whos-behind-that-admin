@@ -1,5 +1,12 @@
 ## Changelog
 
+### v2.9.4 — bug fix (admin) | Server: v1.15.0 | Client: v1.9.3
+- Fixed Actors and Stats pages appearing on right side — extra </div> in About page was closing main wrapper early
+- Fixed server showing disconnected — tab switches were incorrectly calling resetAnalysis()
+- Fixed "Cannot set properties of null" JS error — updateScanCounter referenced removed sidebar elements
+- Fixed duplicate history entries — scan entries now use WBT scan ID as primary key instead of numeric timestamp
+- Fixed token usage not counted for admin scans — inputTokens/outputTokens now passed through saveToHistory and saved to DB
+
 ### v2.9.3 — bug fix (admin) | Server: v1.15.0 | Client: v1.9.3
 - Fixed Actors and Stats pages appearing on right side — extra closing </div> in About page was prematurely closing the main wrapper, pushing subsequent pages outside the layout
 

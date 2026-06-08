@@ -228,7 +228,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.9.3</div>
+      <div class="version-badge" id="version-badge">v2.9.4</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -965,7 +965,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
 <div class="bottom-bar">
   <span><span class="status-dot warn" id="bar-status-dot"></span><span id="bar-status-text">Connecting...</span></span>
   <div class="bar-divider"></div>
-  <span>app v<span id="bar-app-ver">2.9.3</span></span>
+  <span>app v<span id="bar-app-ver">2.9.4</span></span>
   <div class="bar-divider"></div>
   <span id="bar-srv-ver">srv —</span>
   <div class="bar-right" style="font-size:10px;color:var(--text3)">Admin</div>
@@ -1148,7 +1148,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.9.3';
+const APP_VERSION = '2.9.4';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -1339,12 +1339,13 @@ function renderStatsPage() {
 
 function updateScanCounter() {
   const s = getScanStats();
-  document.getElementById('scan-total').textContent = s.total || 0;
+  const totalEl = document.getElementById('scan-total');
+  if (totalEl) totalEl.textContent = s.total || 0;
   if (s.last) {
     const d = new Date(s.last);
-    document.getElementById('scan-last').textContent = 'Last: ' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const lastEl = document.getElementById('scan-last');
+    if (lastEl) lastEl.textContent = 'Last: ' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   }
-  // Count client scans from history
   const h = getHistory();
   const clientCount = h.filter(function(e){ return e.source === 'client' && !e.failed; }).length;
   const clientCountEl = document.getElementById('scan-client-total');
@@ -1355,10 +1356,6 @@ function updateScanCounter() {
 // NAV
 // ─────────────────────────────────────────────
 function showPage(name, el) {
-  const currentPage = document.querySelector('.page.active');
-  if (currentPage && currentPage.id === 'page-analyze' && name !== 'analyze') {
-    resetAnalysis();
-  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -1367,7 +1364,6 @@ function showPage(name, el) {
   if (name === 'history') { renderHistory(); syncHistoryFromServer(); }
   if (name === 'actors') { renderActors(); syncActorsFromServer(); }
   if (name === 'stats') { renderStatsPage(); fetchTokenStats(); }
-  // Update browser history for back/forward support
   if (history.state && history.state.page !== name) {
     history.pushState({ page: name }, '', '#' + name);
   }
@@ -1687,7 +1683,7 @@ async function performServerAnalysis(url, serverUrl) {
   const finalUrl = data.url || url;
   const result = buildResult(data.analysis, data.post, entities);
   const srvVer = await fetchSrvVersion(serverUrl);
-  const entry = await saveToHistory(finalUrl, (data.post && data.post.text) || '', result, srvVer).catch(function(e){ console.warn('History save error:', e.message); return null; });
+  const entry = await saveToHistory(finalUrl, (data.post && data.post.text) || '', result, srvVer, data.inputTokens, data.outputTokens).catch(function(e){ console.warn('History save error:', e.message); return null; });
   result.scanId = entry ? entry.scanId : '';
   showResults(finalUrl, result);
   recordScan();
@@ -1974,14 +1970,14 @@ function hashToPrefix(deviceIdOrHash) {
   return Math.abs(h).toString(36).slice(0,4).toUpperCase();
 }
 
-async function saveToHistory(url, postText, result, srvVersion) {
+async function saveToHistory(url, postText, result, srvVersion, inputTokens, outputTokens) {
   const serverUrl = getServerUrl();
   const srvVer = srvVersion || (serverUrl ? await fetchSrvVersion(serverUrl) : '?');
   const scanId = generateScanId(APP_VERSION, srvVer, 'ADMIN');
   const platform = detectPlatformClient(url);
   const now = new Date();
   const entry = {
-    id: now.getTime(),
+    id: scanId,
     scanId: scanId,
     ts: now.toISOString(),
     url: url,
@@ -1996,7 +1992,9 @@ async function saveToHistory(url, postText, result, srvVersion) {
     appVersion: APP_VERSION,
     serverVersion: srvVer,
     comment: '',
-    fullResult: result
+    fullResult: result,
+    inputTokens: inputTokens || 0,
+    outputTokens: outputTokens || 0
   };
   // Save to localStorage — keyed by scanId to prevent duplicates on sync
   const h = getHistory().filter(function(e){
@@ -2025,7 +2023,7 @@ async function saveFailedScan(url, errorMsg) {
   const scanId = generateScanId(APP_VERSION, srvVer);
   const platform = detectPlatformClient(url);
   const entry = {
-    id: Date.now(),
+    id: scanId,
     scanId: scanId,
     ts: new Date().toISOString(),
     url: url,

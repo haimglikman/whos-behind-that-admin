@@ -209,6 +209,16 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
 .changelog-item ul{padding-left:18px}
 .changelog-item li{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:3px;font-weight:500}
 .changelog-item li strong{color:var(--text)}
+.db-subtab{background:none;border:none;border-bottom:2px solid transparent;padding:8px 16px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;margin-bottom:-1px}
+.db-subtab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.db-subtab:hover{color:var(--text)}
+.btn-warning{background:var(--amber)!important;color:#fff!important;border-color:var(--amber)!important}
+.btn-warning:hover{opacity:.9}
+.changelog-entry{border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;background:var(--surface)}
+.changelog-ver-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-dim);border:1px solid rgba(26,107,255,.2);border-radius:99px;padding:2px 10px;font-family:var(--mono);margin-bottom:8px}
+.changelog-date{font-size:10px;color:var(--text3);margin-bottom:8px}
+.changelog-changed{font-size:11px;color:var(--text2);line-height:1.8}
+.changelog-changed li{margin-left:14px;list-style:disc}
 .bottom-bar{background:var(--surface);border-top:1px solid var(--border);padding:7px 20px;display:flex;align-items:center;gap:16px;font-size:10px;color:var(--text3);font-weight:600;flex-shrink:0}
 .status-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px;background:var(--green)}
 .status-dot.warn{background:var(--amber)}
@@ -228,7 +238,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.9.4</div>
+      <div class="version-badge" id="version-badge">v2.10.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -510,16 +520,35 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
             <p>Israeli-Palestinian conflict — edit, add, or remove entities</p>
             <span id="db-version-badge" style="font-size:10px;font-weight:700;color:var(--blue);background:var(--blue-dim);border:1px solid rgba(26,107,255,.2);border-radius:99px;padding:2px 9px;font-family:var(--mono)">DB v4.0.0</span>
-            <button class="btn btn-sm" style="font-size:10px;padding:3px 10px" onclick="bumpMinor()" title="Bump minor version (intentional batch update)">↑ minor</button>
-            <button class="btn btn-sm" style="font-size:10px;padding:3px 10px" onclick="bumpMajor()" title="Bump major version (major restructure)">↑ major</button>
           </div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn btn-sm" onclick="exportEntities()" title="Download entities as JSON">⬇ Export</button>
           <label class="btn btn-sm" style="cursor:pointer" title="Upload entities JSON">⬆ Import<input type="file" accept=".json" onchange="importEntities(event)" style="display:none"></label>
+          <button class="btn btn-sm btn-warning" onclick="startEntityRefresh()" id="refresh-entities-btn" title="Refresh all entities with AI + web search">✦ Refresh entities</button>
           <button class="btn btn-sm btn-primary" onclick="toggleAddForm()">+ Add entity</button>
         </div>
       </div>
+
+      <!-- Refresh progress bar -->
+      <div id="refresh-progress-box" style="display:none;margin-bottom:14px;padding:12px 16px;background:var(--blue-dim);border:1px solid rgba(26,107,255,.2);border-radius:var(--radius-sm)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:700;color:var(--blue)" id="refresh-status">Refreshing entities...</span>
+          <span style="font-size:11px;color:var(--text3)" id="refresh-count"></span>
+        </div>
+        <div style="height:4px;background:var(--border);border-radius:99px;overflow:hidden">
+          <div id="refresh-bar" style="height:100%;background:var(--blue);border-radius:99px;transition:width .3s;width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px">
+        <button class="db-subtab active" id="subtab-entities" onclick="showDbSubtab('entities')">Entities</button>
+        <button class="db-subtab" id="subtab-changelog" onclick="showDbSubtab('changelog')">Changelog</button>
+      </div>
+
+      <!-- Entities sub-tab -->
+      <div id="dbsub-entities">
         <div class="add-form" id="add-form">
           <h3>New entity</h3>
           <div class="form-grid">
@@ -544,6 +573,15 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <span style="font-size:12px;color:var(--text3);margin-left:auto" id="db-count-label"></span>
         </div>
         <div id="db-list"></div>
+      </div>
+
+      <!-- Changelog sub-tab -->
+      <div id="dbsub-changelog" style="display:none">
+        <div id="db-changelog-list">
+          <div style="font-size:12px;color:var(--text3);padding:20px 0">No changelog entries yet. Entries are added automatically when entities are refreshed, added, or imported.</div>
+        </div>
+      </div>
+
       </div><!-- end page-content -->
     </div><!-- end page-database -->
 
@@ -965,7 +1003,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
 <div class="bottom-bar">
   <span><span class="status-dot warn" id="bar-status-dot"></span><span id="bar-status-text">Connecting...</span></span>
   <div class="bar-divider"></div>
-  <span>app v<span id="bar-app-ver">2.9.4</span></span>
+  <span>app v<span id="bar-app-ver">2.10.0</span></span>
   <div class="bar-divider"></div>
   <span id="bar-srv-ver">srv —</span>
   <div class="bar-right" style="font-size:10px;color:var(--text3)">Admin</div>
@@ -1148,7 +1186,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.9.4';
+const APP_VERSION = '2.10.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -1162,6 +1200,116 @@ function getDbVersion() {
 function saveDbVersion(v) {
   localStorage.setItem('wbt_entity_version', JSON.stringify(v));
 }
+function showDbSubtab(name) {
+  document.getElementById('dbsub-entities').style.display = name === 'entities' ? '' : 'none';
+  document.getElementById('dbsub-changelog').style.display = name === 'changelog' ? '' : 'none';
+  document.getElementById('subtab-entities').classList.toggle('active', name === 'entities');
+  document.getElementById('subtab-changelog').classList.toggle('active', name === 'changelog');
+  if (name === 'changelog') renderDbChangelog();
+}
+
+// ─── DB Changelog ───
+function getDbChangelog() {
+  try { return JSON.parse(localStorage.getItem('wbt_entity_changelog') || '[]'); } catch(e) { return []; }
+}
+function saveDbChangelog(log) {
+  localStorage.setItem('wbt_entity_changelog', JSON.stringify(log));
+}
+function addChangelogEntry(type, changes) {
+  const log = getDbChangelog();
+  log.unshift({ version: getDbVersion(), ts: new Date().toISOString(), type, changes });
+  saveDbChangelog(log);
+}
+function renderDbChangelog() {
+  const log = getDbChangelog();
+  const el = document.getElementById('db-changelog-list');
+  if (!log.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:20px 0">No changelog entries yet. Entries are added automatically when entities are refreshed, added, or imported.</div>';
+    return;
+  }
+  el.innerHTML = log.map(function(entry) {
+    const d = new Date(entry.ts);
+    const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const typeLabel = entry.type === 'refresh' ? '✦ AI Refresh' : entry.type === 'import' ? '⬆ Import' : entry.type === 'add' ? '+ Entity added' : entry.type === 'delete' ? '− Entity deleted' : '✎ Edit';
+    const changesList = Array.isArray(entry.changes)
+      ? '<ul class="changelog-changed">' + entry.changes.map(function(c){ return '<li>' + escHtml(c) + '</li>'; }).join('') + '</ul>'
+      : '<div class="changelog-changed">' + escHtml(entry.changes || '') + '</div>';
+    return '<div class="changelog-entry">' +
+      '<div class="changelog-ver-tag">' + escHtml('DB v' + entry.version) + '</div>' +
+      '<div class="changelog-date">' + dateStr + ' · ' + typeLabel + '</div>' +
+      changesList +
+    '</div>';
+  }).join('');
+}
+
+// ─── Entity Refresh ───
+async function startEntityRefresh() {
+  const serverUrl = getServerUrl();
+  if (!serverUrl) { toast('Server URL not configured.'); return; }
+  if (!confirm('Refresh all ' + getEntities().length + ' entities with AI + web search?\n\nThis may take 2-3 minutes and will cost tokens.')) return;
+  const btn = document.getElementById('refresh-entities-btn');
+  const progressBox = document.getElementById('refresh-progress-box');
+  const statusEl = document.getElementById('refresh-status');
+  const countEl = document.getElementById('refresh-count');
+  const barEl = document.getElementById('refresh-bar');
+  btn.disabled = true;
+  progressBox.style.display = 'block';
+  const entities = getEntities();
+  const BATCH = 5;
+  const allResults = [];
+  let processed = 0;
+  try {
+    for (let i = 0; i < entities.length; i += BATCH) {
+      const batch = entities.slice(i, i + BATCH);
+      statusEl.textContent = 'Refreshing ' + batch.map(function(e){ return e.name; }).join(', ') + '...';
+      countEl.textContent = processed + ' / ' + entities.length;
+      barEl.style.width = (processed / entities.length * 100) + '%';
+      const res = await fetch(serverUrl + '/entities/refresh', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ entities: batch })
+      });
+      if (!res.ok) throw new Error('Server error: ' + res.status);
+      const data = await res.json();
+      allResults.push(...(data.results || []));
+      processed += batch.length;
+    }
+    barEl.style.width = '100%';
+    const changed = allResults.filter(function(r){ return r.changed; });
+    if (changed.length === 0) {
+      statusEl.textContent = '✓ All entities are up to date — no changes needed.';
+      countEl.textContent = '';
+      addChangelogEntry('refresh', ['No changes — all ' + entities.length + ' entities reviewed, none required updates.']);
+    } else {
+      const updatedEntities = entities.map(function(entity) {
+        const result = allResults.find(function(r){ return r.entityId === entity.id; });
+        if (!result || !result.changed) return entity;
+        return Object.assign({}, entity, {
+          narrative: result.narrative || entity.narrative,
+          interest: result.interest || entity.interest,
+          mo: result.mo || entity.mo,
+          comments: result.comments || entity.comments
+        });
+      });
+      localStorage.setItem('wbt_entities', JSON.stringify(updatedEntities));
+      bumpMinor();
+      renderDB();
+      const changeLog = changed.map(function(r){
+        return r.entityName + ': ' + (r.changes || []).join('; ');
+      });
+      addChangelogEntry('refresh', changeLog);
+      statusEl.textContent = '✓ Refresh complete — ' + changed.length + ' entities updated.';
+      countEl.textContent = changed.length + ' / ' + entities.length + ' changed';
+      toast('Refresh complete. ' + changed.length + ' entities updated · DB v' + getDbVersion());
+    }
+  } catch(err) {
+    statusEl.textContent = '✗ Refresh failed: ' + err.message;
+    countEl.textContent = '';
+    toast('Refresh failed: ' + err.message);
+  }
+  btn.disabled = false;
+  setTimeout(function(){ progressBox.style.display = 'none'; }, 5000);
+}
+
 function bumpPatch() {
   const parts = getDbVersion().split('.').map(Number);
   parts[2]++;
@@ -2326,9 +2474,12 @@ function saveEntity(id) {
 }
 
 function deleteEntity(id) {
+  const entities = getEntities();
+  const entity = entities.find(function(e){ return e.id === id; });
   if (!confirm('Delete this entity?')) return;
-  saveEntities(getEntities().filter(function(e){ return e.id !== id; }));
+  saveEntities(entities.filter(function(e){ return e.id !== id; }));
   renderDB();
+  if (entity) addChangelogEntry('delete', ['Deleted entity: ' + entity.name]);
   toast('Entity deleted.');
 }
 
@@ -2362,15 +2513,15 @@ function importEntities(event) {
         (version ? '\n\nFile DB version: v' + version : '');
       if (!confirm(msg)) { event.target.value = ''; return; }
       localStorage.setItem('wbt_entities', JSON.stringify(entities));
-      // Set version from file, then bump patch to record the import
       if (version) saveDbVersion(version);
-      bumpPatch();
+      bumpMajor();
       renderDbVersion();
       renderDB();
       const dbCount = document.getElementById('db-count');
       if (dbCount) dbCount.textContent = entities.length;
       const dbBadge = document.getElementById('db-count-badge');
       if (dbBadge) dbBadge.textContent = entities.length;
+      addChangelogEntry('import', ['Imported ' + entities.length + ' entities from file' + (version ? ' (source: DB v' + version + ')' : '') + '.']);
       toast('Imported ' + entities.length + ' entities (DB v' + getDbVersion() + ').');
     } catch(err) {
       toast('Import failed: ' + err.message);
@@ -2400,6 +2551,7 @@ function addEntity() {
   ['new-name','new-narrative','new-interest','new-mo','new-comments'].forEach(function(id){ document.getElementById(id).value = ''; });
   document.getElementById('add-form').classList.remove('open');
   renderDB();
+  addChangelogEntry('add', ['Added new entity: ' + name]);
   toast('Entity added to database.');
 }
 

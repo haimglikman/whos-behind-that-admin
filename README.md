@@ -1,5 +1,11 @@
 ## Changelog
 
+### v2.10.1 — bug fix (admin) | Server: v1.16.1 | Client: v1.10.2
+- Last refresh timestamp shown in Entity Database tab with date/time and change count
+- Entity refresh now runs in background — can switch tabs freely while it runs
+- About & Setup changelog updated with v2.10.0 entry
+- Fixed error 500 on refresh — single entity failures no longer kill the whole batch
+
 ### v2.10.0 (admin) | Server: v1.16.0 | Client: v1.10.2
 - Entity Database: new "✦ Refresh entities" button — sends all entities to Claude with web search, updates changed fields, bumps minor version
 - Entity Database: two sub-tabs — Entities (existing) and Changelog (new)

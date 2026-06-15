@@ -1,5 +1,11 @@
 ## Changelog
 
+### v2.10.0 (admin) | Server: v1.16.0 | Client: v1.10.2
+- Entity Database: new "✦ Refresh entities" button — sends all entities to Claude with web search, updates changed fields, bumps minor version
+- Entity Database: two sub-tabs — Entities (existing) and Changelog (new)
+- Changelog tab: auto-logs every refresh, import, add, and delete with version, date, and details
+- Version logic updated: minor bumps on AI refresh, major bumps on import, patch on single edits — manual bump buttons removed
+
 ### v2.9.4 — bug fix (admin) | Server: v1.15.0 | Client: v1.9.3
 - Fixed Actors and Stats pages appearing on right side — extra </div> in About page was closing main wrapper early
 - Fixed server showing disconnected — tab switches were incorrectly calling resetAnalysis()

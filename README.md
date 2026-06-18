@@ -1,5 +1,8 @@
 ## Changelog
 
+### v2.10.2 — bug fix (admin) | Server: v1.16.2 | Client: v1.11.2
+- Fixed citation markup appearing in actor bios in Actors tab
+
 ### v2.10.1 — bug fix (admin) | Server: v1.16.1 | Client: v1.10.2
 - Last refresh timestamp shown in Entity Database tab with date/time and change count
 - Entity refresh now runs in background — can switch tabs freely while it runs

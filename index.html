@@ -238,7 +238,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.10.1</div>
+      <div class="version-badge" id="version-badge">v2.10.2</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1015,7 +1015,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
 <div class="bottom-bar">
   <span><span class="status-dot warn" id="bar-status-dot"></span><span id="bar-status-text">Connecting...</span></span>
   <div class="bar-divider"></div>
-  <span>app v<span id="bar-app-ver">2.10.1</span></span>
+  <span>app v<span id="bar-app-ver">2.10.2</span></span>
   <div class="bar-divider"></div>
   <span id="bar-srv-ver">srv —</span>
   <div class="bar-right" style="font-size:10px;color:var(--text3)">Admin</div>
@@ -1198,7 +1198,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.10.1';
+const APP_VERSION = '2.10.2';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -2654,13 +2654,17 @@ async function researchActor() {
   pendingActorHandle = null;
 }
 
+function stripCitations(text) {
+  return (text || '').replace(/<cite[^>]*>(.*?)<\/cite>/gs, '$1').replace(/\[\d+\]/g, '').trim();
+}
+
 function renderActorCard(container, actor, publication) {
   container.innerHTML =
     '<div style="margin-bottom:6px">' +
       '<div class="actor-name">' + escHtml(actor.name || actor.handle || 'Unknown') + '</div>' +
       (actor.location ? '<div class="actor-location">📍 ' + escHtml(actor.location) + '</div>' : '') +
     '</div>' +
-    '<div class="actor-bio">' + escHtml(actor.bio || 'No biographical information found.') + '</div>' +
+    '<div class="actor-bio">' + escHtml(stripCitations(actor.bio || 'No biographical information found.')) + '</div>' +
     (actor.handles && actor.handles.length > 0 ?
       '<div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;margin-top:8px">Known accounts & websites</div>' +
       '<div class="actor-handles">' + actor.handles.map(function(h){ return '<span class="actor-handle-tag">' + escHtml(h) + '</span>'; }).join('') + '</div>'
@@ -2743,7 +2747,7 @@ function renderActors() {
           '<div class="actor-name">' + escHtml(a.name || a.handle) + '</div>' +
           '<div class="actor-handle">@' + escHtml(a.handle) + (a.url ? ' — <a href="' + escHtml(a.url) + '" target="_blank" style="color:var(--blue);font-size:10px">source article ↗</a>' : '') + '</div>' +
           (a.location ? '<div class="actor-location">📍 ' + escHtml(a.location) + '</div>' : '') +
-          '<div class="actor-bio">' + escHtml(a.bio || '') + '</div>' +
+          '<div class="actor-bio">' + escHtml(stripCitations(a.bio || '')) + '</div>' +
           (a.handles && a.handles.length > 0 ? '<div class="actor-handles" style="margin-top:8px">' + a.handles.map(function(h){ return '<span class="actor-handle-tag">' + escHtml(h) + '</span>'; }).join('') + '</div>' : '') +
           (a.publication ? renderAdminPublicationCard(a.publication) : '') +
         '</div>' +

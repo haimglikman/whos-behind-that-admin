@@ -1,6 +1,6 @@
 ## Changelog
 
-### v2.10.2 — bug fix (admin) | Server: v1.16.2 | Client: v1.11.2
+### v2.10.2 — bug fix (admin) | Server: v1.16.2 | Client: v1.12.0
 - Fixed citation markup appearing in actor bios in Actors tab
 
 ### v2.10.1 — bug fix (admin) | Server: v1.16.1 | Client: v1.10.2

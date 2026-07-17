@@ -1,5 +1,8 @@
 ## Changelog
 
+### v2.14.2 (admin) | Server: v1.22.1 | Client: v1.16.2
+- Entity saves, refreshes, and imports now push to server DB automatically
+
 ### v2.14.1 — bug fix (admin — live) | Server: v1.22.0 | Client: v1.16.1
 - Added favicon — logo.png now shows as tab icon
 

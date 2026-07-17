@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.14.1</div>
+      <div class="version-badge" id="version-badge">v2.14.2</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -711,69 +711,6 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <h2>Changelog</h2>
 
           <div class="changelog-item">
-            <div class="changelog-ver">v2.14.1 — Bug fix (live)</div>
-            <div class="changelog-date">Current version — bug fix</div>
-            <ul>
-              <li><strong>Favicon added</strong> — logo.png now shows as tab icon in browser and search results.</li>
-            </ul>
-          </div>
-
-          <div class="changelog-item">
-            <div class="changelog-ver">v2.14.0 — Live release</div>
-            <div class="changelog-date">Previous version</div>
-            <ul>
-              <li><strong>First live production release</strong> based on dev v2.13.15.</li>
-              <li><strong>Tab title</strong> updated to "Who's Behind That? - Admin".</li>
-              <li><strong>Points to live server</strong> (whos-behind-that-server.onrender.com).</li>
-            </ul>
-          </div>
-
-          <div class="changelog-item">
-            <div class="changelog-ver">v2.13.x — DEV versions</div>
-            <div class="changelog-date">Development versions</div>
-            <ul>
-              <li><strong>v2.13.15:</strong> Omitted posts in legend now show secondary entity and summary. Render order: timeline → synopsis → legend.</li>
-              <li><strong>v2.13.14:</strong> Fixed posts array always empty when saving clusters — now built from basket (in-memory) instead of getHistory().</li>
-              <li><strong>v2.13.13:</strong> Fixed P-number scrambling — timeline and legend preserve postIds order when reconstructing from cluster history (presorted=true).</li>
-              <li><strong>v2.13.12:</strong> Revert of broken v2.13.11.</li>
-              <li><strong>v2.13.11:</strong> P-number fix attempt (reverted — broke UI).</li>
-              <li><strong>v2.13.10:</strong> Tab title "WBT - Admin DEV". Posts array built from basket. Cluster ID above timeline. Frame/event as prominent cards.</li>
-              <li><strong>v2.13.9:</strong> Cluster history: client clusters reconstruct gracefully using saved posts data.</li>
-              <li><strong>v2.13.8:</strong> Fixed "clearInvestigationBasket is not defined" error.</li>
-              <li><strong>v2.13.7:</strong> Version filters as dropdowns from real history data. Pending banner expanded with post list and remove buttons. Auto-run investigation. DD/MM/YYYY dates. Bottom bar version fixed.</li>
-              <li><strong>v2.13.6:</strong> Label column 120px, 2px buffer. Entity labels font 8px, wrap at 16 chars. Hover popup flips left near right edge. Version filter labels shortened. Pending banner auto-clears after investigation.</li>
-              <li><strong>v2.13.5:</strong> Hover popup rebuilt using clean global functions (wbtShowTlPopup/wbtHideTlPopup).</li>
-              <li><strong>v2.13.4:</strong> Timeline label column 160px, 2px buffer. Secondary entity in hover popup and legend.</li>
-              <li><strong>v2.13.3:</strong> Timeline hard boundary at 140px, 2px buffer, wrap at ~18 chars.</li>
-              <li><strong>v2.13.0–2:</strong> Y-axis entity lanes timeline. Top nav bar. FAQ tab. Reversible investigate button.</li>
-            </ul>
-          </div>
-
-          <div class="changelog-item">
-            <div class="changelog-ver">v2.11.x — v2.12.x — DEV versions</div>
-            <div class="changelog-date">Development versions</div>
-            <ul>
-              <li><strong>Investigate tab:</strong> Cluster detection (Haiku) + synthesis (Sonnet) pipeline. Cluster DB table. Connection lines between posts.</li>
-              <li><strong>Cluster history tab:</strong> View, rename, and reopen past cluster investigations.</li>
-              <li><strong>FAQ system:</strong> Server-side FAQ with full CRUD editor in admin. 32 default FAQs seeded across 4 groups.</li>
-              <li><strong>Timeline visualization:</strong> X=time, Y=entity lanes. Hover popup with post details.</li>
-              <li><strong>Pending banner:</strong> Shows posts queued for investigation with remove buttons.</li>
-              <li><strong>Version filters:</strong> From/up to range with semver comparison.</li>
-              <li><strong>Cross-device cluster reconstruction:</strong> Posts array saved with cluster for reconstruction on any device.</li>
-            </ul>
-          </div>
-
-          <div class="changelog-item">
-            <div class="changelog-ver">v2.10.2</div>
-            <div class="changelog-date">Previous version</div>
-            <ul>
-              <li><strong>OG tags and meta description</strong> added to live client.</li>
-              <li><strong>Favicon</strong> added to live client (logo.png).</li>
-              <li><strong>Tab title</strong> updated on live client.</li>
-            </ul>
-          </div>
-
-          <div class="changelog-item">
             <div class="changelog-ver">v2.10.0</div>
             <div class="changelog-date">Previous version</div>
             <ul>
@@ -786,7 +723,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
 
           <div class="changelog-item">
             <div class="changelog-ver">v2.9.0</div>
-            <div class="changelog-date">Current version — bug fix</div>
+            <div class="changelog-date">Current version</div>
             <ul>
               <li><strong>Stats tab:</strong> Dedicated page for admin/client scan counts, token usage breakdown, and estimated cost with editable rates.</li>
               <li><strong>Sidebar cleaned up:</strong> Scan counters and DB badge moved to Stats tab.</li>
@@ -1377,7 +1314,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.14.1';
+const APP_VERSION = '2.14.2';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -1514,7 +1451,15 @@ async function startEntityRefresh() {
         });
       });
       localStorage.setItem('wbt_entities', JSON.stringify(updatedEntities));
-      bumpMinor();
+      const refreshVer = bumpMinor();
+      // Push refreshed entities to server
+      const serverUrl = getServerUrl();
+      if (serverUrl) {
+        fetch(serverUrl + '/entities/save', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ entities: updatedEntities, version: refreshVer })
+        }).catch(function(err){ console.warn('entities/save error:', err.message); });
+      }
       renderDB();
       const changeLog = changed.map(function(r){
         return r.entityName + ': ' + (r.changes || []).join('; ');
@@ -1576,6 +1521,16 @@ function saveEntities(e) {
   if (dbCount) dbCount.textContent = e.length;
   const dbBadge = document.getElementById('db-count-badge');
   if (dbBadge) dbBadge.textContent = e.length;
+  // Push to server so clients always use latest entities
+  const serverUrl = getServerUrl();
+  if (serverUrl) {
+    fetch(serverUrl + '/entities/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entities: e, version: v })
+    }).then(function(r){ if (!r.ok) console.warn('entities/save failed:', r.status); })
+      .catch(function(err){ console.warn('entities/save error:', err.message); });
+  }
 }
 function getHistory() { try { return JSON.parse(localStorage.getItem('wbt_history') || '[]'); } catch(e) { return []; } }
 function saveHistory(h) { localStorage.setItem('wbt_history', JSON.stringify(h)); updateHistoryCount(); }
@@ -3726,7 +3681,15 @@ function importEntities(event) {
       if (!confirm(msg)) { event.target.value = ''; return; }
       localStorage.setItem('wbt_entities', JSON.stringify(entities));
       if (version) saveDbVersion(version);
-      bumpMajor();
+      const importVer = bumpMajor();
+      // Push imported entities to server
+      const sUrl = getServerUrl();
+      if (sUrl) {
+        fetch(sUrl + '/entities/save', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ entities: entities, version: importVer })
+        }).catch(function(err){ console.warn('entities/save error:', err.message); });
+      }
       renderDbVersion();
       renderDB();
       const dbCount = document.getElementById('db-count');

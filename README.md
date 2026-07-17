@@ -1,5 +1,8 @@
 ## Changelog
 
+### v2.14.1 — bug fix (admin — live) | Server: v1.22.0 | Client: v1.16.1
+- Added favicon — logo.png now shows as tab icon
+
 ### v2.14.0 (admin — live) | Server: v1.22.0 | Client: v1.16.0
 - First live production release — based on admin-dev v2.13.15
 - Tab title changed to "Who's Behind That? - Admin"

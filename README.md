@@ -1,5 +1,12 @@
 ## Changelog
 
+### v2.15.0 (admin) | Server: v1.22.4
+- New Prompts tab (between Entity Database and FAQ)
+- View, edit, and version all 6 AI prompts: Scan, Coherence, Connection, Synopsis, Actor, Convergent Interest
+- Model selector per prompt (Haiku / Sonnet 4.5 / Sonnet 4.6 / Opus)
+- History sub-tab with rollback to any previous version
+- Save activates immediately on the live server without redeploy
+
 ### v2.14.3 (admin) | Server: v1.22.3
 - New Prompts tab between Entity Database and FAQ
 - View, edit, and version all 6 AI prompts (Scan, Coherence, Connection, Synopsis, Actor, Convergent Interest)

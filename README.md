@@ -1,5 +1,10 @@
 ## Changelog
 
+### v2.14.0 (admin — live) | Server: v1.22.0 | Client: v1.16.0
+- First live production release — based on admin-dev v2.13.15
+- Tab title changed to "Who's Behind That? - Admin"
+- Points to live server (whos-behind-that-server.onrender.com)
+
 ### v2.10.2 — bug fix (admin) | Server: v1.16.2 | Client: v1.12.0
 - Fixed citation markup appearing in actor bios in Actors tab
 

@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.14.2</div>
+      <div class="version-badge" id="version-badge">v2.14.3</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -288,6 +288,10 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
     <button class="nav-item" id="nav-faq" onclick="showPage('faq',this)">
       <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 6a2 2 0 013.8.9c0 1.3-2 1.6-2 2.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="11" r=".7" fill="currentColor"/></svg>
       FAQ
+    </button>
+    <button class="nav-item" id="nav-prompts" onclick="showPage('prompts',this)">
+      <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Prompts
     </button>
     <button class="nav-item" id="nav-about" onclick="showPage('about',this)">
       <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7.5 7v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="4.5" r=".7" fill="currentColor"/></svg>
@@ -592,6 +596,70 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <div id="clusters-list"><div style="font-size:12px;color:var(--text3);padding:20px 0">Loading...</div></div>
       </div>
     </div><!-- end page-clusters -->
+
+    <!-- ── PROMPTS PAGE ── -->
+    <div id="page-prompts" class="page">
+      <div class="page-content">
+        <div class="page-header">
+          <div><h1>Prompts</h1><p>Manage AI prompts and models for each function</p></div>
+        </div>
+        <!-- Sub-tabs -->
+        <div style="display:flex;gap:2px;background:var(--bg2);border-radius:var(--radius-sm);padding:3px;margin-bottom:16px;width:fit-content">
+          <button id="prompts-tab-active" onclick="switchPromptsTab('active')" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;border-radius:5px;cursor:pointer;background:var(--surface);color:var(--text);font-family:var(--sans)">Active prompts</button>
+          <button id="prompts-tab-history" onclick="switchPromptsTab('history')" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;border-radius:5px;cursor:pointer;background:transparent;color:var(--text3);font-family:var(--sans)">History</button>
+        </div>
+        <!-- Active prompts panel -->
+        <div id="prompts-active-panel">
+          <div id="prompts-list" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+        <!-- History panel -->
+        <div id="prompts-history-panel" style="display:none">
+          <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+            <select id="prompts-history-select" onchange="loadPromptHistory(this.value)" class="filter-input" style="width:200px">
+              <option value="">Select prompt...</option>
+              <option value="scan">Scan</option>
+              <option value="coherence">Coherence</option>
+              <option value="connection">Connection</option>
+              <option value="synopsis">Synopsis</option>
+              <option value="actor">Actor</option>
+              <option value="convergent">Convergent Interest</option>
+            </select>
+          </div>
+          <div id="prompts-history-list" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+        <!-- Edit modal -->
+        <div id="prompt-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center">
+          <div style="background:var(--surface);border-radius:var(--radius);padding:20px;width:min(700px,90vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-size:14px;font-weight:700;color:var(--text)" id="prompt-modal-title">Edit prompt</div>
+              <button onclick="closePromptModal()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text3)">×</button>
+            </div>
+            <input type="hidden" id="prompt-modal-name">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+              <div>
+                <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Version</div>
+                <input type="text" id="prompt-modal-version" class="filter-input" style="width:100%" placeholder="e.g. 1.1.0">
+              </div>
+              <div>
+                <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Model</div>
+                <select id="prompt-modal-model" class="filter-input" style="width:100%">
+                  <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+                  <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+                  <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
+                  <option value="claude-opus-4-6">Claude Opus 4.6</option>
+                </select>
+              </div>
+            </div>
+            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Prompt text</div>
+            <textarea id="prompt-modal-text" style="width:100%;height:320px;font-family:var(--mono);font-size:11px;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);resize:vertical;box-sizing:border-box;line-height:1.6"></textarea>
+            <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+              <button onclick="closePromptModal()" class="btn btn-sm">Cancel</button>
+              <button onclick="savePrompt()" class="btn btn-sm btn-primary">Save & activate</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- end page-prompts -->
 
     <!-- ── FAQ PAGE ── -->
     <div id="page-faq" class="page">
@@ -1314,7 +1382,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.14.2';
+const APP_VERSION = '2.14.3';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -2215,6 +2283,7 @@ function showPage(name, el) {
   if (name === 'investigate') { renderBasket(); updatePendingBanner(); }
   if (name === 'clusters') { renderClustersHistory(); }
   if (name === 'faq') { renderFaqAdmin(); }
+  if (name === 'prompts') { renderPromptsPage(); }
   if (history.state && history.state.page !== name) {
     history.pushState({ page: name }, '', '#' + name);
   }
@@ -2246,6 +2315,7 @@ window.addEventListener('popstate', function(e) {
   if (name === 'investigate') { renderBasket(); updatePendingBanner(); }
   if (name === 'clusters') { renderClustersHistory(); }
   if (name === 'faq') { renderFaqAdmin(); }
+  if (name === 'prompts') { renderPromptsPage(); }
 });
 
 // ─────────────────────────────────────────────
@@ -2984,6 +3054,144 @@ async function loadClustersHistory() {
     const data = await res.json();
     return data.clusters || [];
   } catch(e) { return []; }
+}
+
+// ─── PROMPTS ADMIN ───
+const PROMPT_DISPLAY_NAMES = {
+  scan: 'Scan', coherence: 'Coherence', connection: 'Connection',
+  synopsis: 'Synopsis', actor: 'Actor', convergent: 'Convergent Interest'
+};
+const PROMPT_MODELS = {
+  scan: 'claude-sonnet-4-5', coherence: 'claude-sonnet-4-5',
+  connection: 'claude-haiku-4-5-20251001', synopsis: 'claude-sonnet-4-5',
+  actor: 'claude-sonnet-4-5', convergent: 'claude-sonnet-4-5'
+};
+
+let _promptsCache = {};
+
+async function renderPromptsPage() {
+  const serverUrl = getServerUrl();
+  if (!serverUrl) { document.getElementById('prompts-list').innerHTML = '<div style="color:var(--text3);font-size:12px">Connect to server first.</div>'; return; }
+  try {
+    const res = await fetch(serverUrl + '/prompts/list');
+    const data = await res.json();
+    const prompts = {};
+    (data.prompts || []).forEach(function(p){ prompts[p.name] = p; });
+    _promptsCache = prompts;
+    const names = ['scan','coherence','connection','synopsis','actor','convergent'];
+    document.getElementById('prompts-list').innerHTML = names.map(function(name) {
+      const p = prompts[name];
+      const model = p ? p.model : PROMPT_MODELS[name];
+      const version = p ? p.version : '—';
+      const updated = p ? new Date(p.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) : 'Not saved yet';
+      const hasPrompt = !!p;
+      return '<div class="card" style="padding:12px 16px">' +
+        '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
+          '<span style="font-size:13px;font-weight:700;color:var(--text);min-width:140px">' + PROMPT_DISPLAY_NAMES[name] + '</span>' +
+          '<span style="font-family:var(--mono);font-size:10px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(26,107,255,.2);border-radius:99px;padding:2px 8px">v' + version + '</span>' +
+          '<span style="font-size:11px;color:var(--text3)">' + model + '</span>' +
+          '<span style="font-size:10px;color:var(--text3);margin-left:auto">Last saved: ' + updated + '</span>' +
+          '<button onclick="openPromptEditor(\'' + name + '\')" class="btn btn-sm btn-primary" style="font-size:11px">' + (hasPrompt ? 'Edit' : 'Seed') + '</button>' +
+        '</div>' +
+        (hasPrompt ? '<div style="margin-top:8px;font-size:10px;color:var(--text3);font-family:var(--mono);background:var(--bg2);border-radius:var(--radius-sm);padding:6px 8px;max-height:60px;overflow:hidden;line-height:1.5">' + escHtml(p.prompt_text.slice(0, 200)) + '...</div>' : '') +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    document.getElementById('prompts-list').innerHTML = '<div style="color:var(--red);font-size:12px">Error loading prompts: ' + escHtml(e.message) + '</div>';
+  }
+}
+
+function switchPromptsTab(tab) {
+  const isActive = tab === 'active';
+  document.getElementById('prompts-active-panel').style.display = isActive ? '' : 'none';
+  document.getElementById('prompts-history-panel').style.display = isActive ? 'none' : '';
+  document.getElementById('prompts-tab-active').style.background = isActive ? 'var(--surface)' : 'transparent';
+  document.getElementById('prompts-tab-active').style.color = isActive ? 'var(--text)' : 'var(--text3)';
+  document.getElementById('prompts-tab-history').style.background = isActive ? 'transparent' : 'var(--surface)';
+  document.getElementById('prompts-tab-history').style.color = isActive ? 'var(--text3)' : 'var(--text)';
+}
+
+async function loadPromptHistory(name) {
+  if (!name) return;
+  const serverUrl = getServerUrl();
+  const listEl = document.getElementById('prompts-history-list');
+  listEl.innerHTML = '<div style="font-size:12px;color:var(--text3)">Loading...</div>';
+  try {
+    const res = await fetch(serverUrl + '/prompts/history/' + name);
+    const data = await res.json();
+    const rows = data.history || [];
+    if (!rows.length) { listEl.innerHTML = '<div style="font-size:12px;color:var(--text3)">No history found.</div>'; return; }
+    listEl.innerHTML = rows.map(function(r) {
+      const isActive = r.is_active;
+      const date = new Date(r.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});
+      return '<div class="card" style="padding:10px 14px;' + (isActive ? 'border-color:var(--blue)' : '') + '">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
+          '<span style="font-family:var(--mono);font-size:10px;background:' + (isActive ? 'var(--blue)' : 'var(--bg2)') + ';color:' + (isActive ? '#fff' : 'var(--text3)') + ';border-radius:99px;padding:2px 8px">v' + r.version + (isActive ? ' · active' : '') + '</span>' +
+          '<span style="font-size:11px;color:var(--text3)">' + r.model + '</span>' +
+          '<span style="font-size:10px;color:var(--text3);margin-left:auto">' + date + '</span>' +
+          (!isActive ? '<button onclick="activatePromptVersion(' + r.id + ')" class="btn btn-sm" style="font-size:10px">Restore</button>' : '') +
+        '</div>' +
+        '<div style="font-size:10px;color:var(--text2);font-family:var(--mono);background:var(--bg2);border-radius:var(--radius-sm);padding:6px 8px;max-height:60px;overflow:hidden;line-height:1.5">' + escHtml(r.prompt_text.slice(0, 200)) + '...</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    listEl.innerHTML = '<div style="color:var(--red);font-size:12px">' + escHtml(e.message) + '</div>';
+  }
+}
+
+function openPromptEditor(name) {
+  const p = _promptsCache[name];
+  document.getElementById('prompt-modal-name').value = name;
+  document.getElementById('prompt-modal-title').textContent = 'Edit prompt: ' + PROMPT_DISPLAY_NAMES[name];
+  // Suggest next patch version
+  if (p && p.version) {
+    const parts = p.version.split('.').map(Number);
+    parts[2]++;
+    document.getElementById('prompt-modal-version').value = parts.join('.');
+  } else {
+    document.getElementById('prompt-modal-version').value = '1.0.0';
+  }
+  document.getElementById('prompt-modal-model').value = p ? p.model : PROMPT_MODELS[name];
+  document.getElementById('prompt-modal-text').value = p ? p.prompt_text : '';
+  document.getElementById('prompt-edit-modal').style.display = 'flex';
+}
+
+function closePromptModal() {
+  document.getElementById('prompt-edit-modal').style.display = 'none';
+}
+
+async function savePrompt() {
+  const name = document.getElementById('prompt-modal-name').value;
+  const version = document.getElementById('prompt-modal-version').value.trim();
+  const model = document.getElementById('prompt-modal-model').value;
+  const text = document.getElementById('prompt-modal-text').value.trim();
+  if (!text) { toast('Prompt text cannot be empty.'); return; }
+  if (!version) { toast('Version is required.'); return; }
+  const serverUrl = getServerUrl();
+  try {
+    const res = await fetch(serverUrl + '/prompts/save', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name, version, model, prompt_text: text })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closePromptModal();
+      toast('Prompt saved & activated — v' + version);
+      renderPromptsPage();
+    } else { toast('Save failed: ' + (data.error || 'unknown error')); }
+  } catch(e) { toast('Error: ' + e.message); }
+}
+
+async function activatePromptVersion(id) {
+  const serverUrl = getServerUrl();
+  try {
+    const res = await fetch(serverUrl + '/prompts/activate/' + id, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      toast('Version restored and activated.');
+      loadPromptHistory(document.getElementById('prompts-history-select').value);
+    } else { toast('Failed: ' + (data.error || 'unknown')); }
+  } catch(e) { toast('Error: ' + e.message); }
 }
 
 // ─── FAQ ADMIN ───

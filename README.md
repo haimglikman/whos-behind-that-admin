@@ -1,5 +1,9 @@
 ## Changelog
 
+### v2.15.1 — bug fix (admin) | Server: v1.22.4
+- Prompts tab: Edit modal now pre-fills with current hardcoded prompt text when no DB version exists — just click Edit and Save, no copy-pasting needed
+- Button label changed from "Seed" to "Edit" for all prompts
+
 ### v2.15.0 (admin) | Server: v1.22.4
 - New Prompts tab (between Entity Database and FAQ)
 - View, edit, and version all 6 AI prompts: Scan, Coherence, Connection, Synopsis, Actor, Convergent Interest

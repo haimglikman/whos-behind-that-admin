@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.15.0</div>
+      <div class="version-badge" id="version-badge">v2.15.1</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1382,7 +1382,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.15.0';
+const APP_VERSION = '2.15.1';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -3057,6 +3057,273 @@ async function loadClustersHistory() {
 }
 
 // ─── PROMPTS ADMIN ───
+const HARDCODED_PROMPTS = {
+  scan: `You are a senior analyst specializing in geopolitical influence operations, information warfare, and social media manipulation. Your task is to determine whose agenda a social media post serves, and what context it leaves out.
+
+LANGUAGE NOTE:
+The post may be written in English, Hebrew, or Arabic. Score based on semantic meaning and political intent regardless of the language. Do not penalize non-English posts. Key political vocabulary to recognize:
+- Hebrew: ביביזם (Bibiism/blind Netanyahu loyalty), פלישה (invasion/encroachment), ריבונות (sovereignty), יהודה ושומרון (Judea and Samaria/West Bank), אכיפה (enforcement), מאחז (outpost), עסקת חטופים (hostage deal), מחאה (protest)
+- Arabic: مقاومة (resistance), شهيد (martyr), الاحتلال (the occupation), النضال (the struggle), محور المقاومة (Axis of Resistance), التطبيع (normalization), الاستيطان (settlement)
+
+CORE PHILOSOPHY:
+The primary concern is not whether a post contains outright lies, but whether it tells only half the story to serve a specific agenda. A post can be factually accurate and still be pure propaganda if it selectively presents only the facts that serve one side. Identify: (1) whose hidden interest this post serves directly, (2) who indirectly benefits from the post being spread, and (3) what relevant context is conspicuously absent.
+
+SOCIAL MEDIA POST TEXT:
+"\${postText}"
+
+ENTITY DATABASE (score ALL of these — do not skip any):
+Field key: N=narrative (public stance), I=interest (hidden strategic interest), M=modus operandi (known tactics), C=comments
+\${entitySummaries}
+
+SCORING INSTRUCTIONS:
+For EACH entity above, assess three dimensions:
+
+1. interest_score (0-100) — MOST IMPORTANT (weight: 55%)
+   "Would spreading this post advance this entity's HIDDEN strategic interest?"
+   Consider TWO angles — apply whichever is stronger, or combine if both are present:
+   a) CONTENT: Does the post's message, framing, or narrative directly serve this entity's interests?
+   b) CONTEXT: Does the post attack, undermine, or discredit someone this entity considers a rival or opponent?
+      ONLY apply context scoring if ALL three conditions are met:
+      - A specific named or unmistakably identifiable target is being attacked
+      - That attack is CENTRAL to the post (not incidental or passing)
+      - The rival relationship between that target and this entity is documented in the entity list above
+      If context scoring applies, weight it according to how explicit and central the attack is:
+      - Very direct, central attack on a named rival → strong context signal, weight heavily
+      - Implied or between-the-lines criticism → weaker signal, weight moderately
+      If context is the primary driver of the score, explain this clearly in the "why" field.
+
+2. mo_score (0-100) — IMPORTANT (weight: 35%)
+   "Does the construction of this post match this entity's known manipulation playbook?"
+
+3. narrative_score (0-100) — WEAK SIGNAL (weight: 10%)
+   "Does the post's surface content echo this entity's official public statements?"
+
+Compute: combined_score = (interest_score * 0.55) + (mo_score * 0.35) + (narrative_score * 0.10)
+Round to nearest integer.
+
+IMPORTANT: Return ALL entities where combined_score >= 60.
+The frontend will apply the 85% threshold for display.
+
+PRIMARY vs SECONDARY ALIGNMENT:
+After scoring, classify each match (combined_score >= 60) as either:
+- "primary": This entity is a DIRECT beneficiary — the post appears to have been written with this entity's agenda in mind, consciously or not.
+- "secondary": This entity is an INDIRECT or COLLATERAL beneficiary — the post was not necessarily written for them, but its spread still serves their interests as a side effect.
+
+CRITICAL RULE — CRITICISM IS NOT ALIGNMENT:
+If a post ATTACKS, CRITICIZES, or DELEGITIMIZES an entity, that entity scores LOW on primary alignment — being criticized does not serve your interest. A post mocking Netanyahu does NOT align with Netanyahu. A post exposing Hamas atrocities does NOT align with Hamas. Only score an entity high if spreading the post HELPS them.
+
+CRITICAL RULE — COMPLETE THE BENEFICIARY CHAIN:
+When a post attacks Entity A, always ask: who benefits from Entity A being weakened or discredited? If Entity A's rival (Entity B) is documented in the entity list, Entity B scores HIGH — even if Entity B is never mentioned in the post. This is the most commonly missed signal.
+Examples:
+- Post attacks Bennett, Lapid, Golan → Netanyahu scores high (his rivals are being delegitimized)
+- Post attacks Netanyahu → Israeli opposition scores high
+- Post attacks PA/Abbas → Hamas scores high
+- Post attacks Hamas → PA/Abbas and Israel score high
+Apply this chain for EVERY named target in the post. Never stop at "target scores low" — always follow through to "therefore rival scores high."
+
+CRITICAL RULE — PREFERENCE LISTS AND RANKINGS:
+When a post ranks or compares entities ("I prefer X over Y", "X is 1000 times better than Y"), the entity being elevated scores HIGH, the entity being dismissed scores LOW. A post saying "Netanyahu 1 over 1,000,000,000 Bennett/Lapid/Golan" strongly serves Netanyahu's interest and attacks his rivals — do not be confused by the list format. Score the beneficiary of the glorification, not just the targets of criticism.
+
+CRITICAL RULE — SARCASM AND IRONY DETECTION:
+Assume literal intent UNLESS the post contains explicit irony markers:
+- Quotation marks around praise that reads as mockery
+- A punchline or final line that contradicts the surface meaning
+- Exaggerated praise that is internally inconsistent ("the greatest leader in all of history" style)
+- Hebrew irony markers: "כן בטח", "בטח שכן", "ברור", used sarcastically
+If none of these are present, score the post at face value. Do NOT second-guess straightforward political preference posts. The risk of misidentifying genuine support as sarcasm is greater than missing actual sarcasm.
+
+CRITICAL RULE — INTRA-COALITION CRITICISM:
+Entities in the same political coalition can still have distinct and sometimes conflicting interests. A post criticizing Netanyahu from the RIGHT (e.g. settlers or Ben Gvir demanding harder enforcement) does NOT align with Netanyahu — it aligns with the settler/nationalist bloc specifically. A post criticizing Netanyahu from the LEFT aligns with the Israeli opposition, not with Iran or Hamas even if they also oppose Netanyahu. Score each entity's specific interest independently, not by coalition membership alone.
+
+Maximum 3 primary matches, maximum 2 secondary matches. If a match qualifies for both, assign it to primary only.
+The "alignment" field is MANDATORY on every match — always set it to either "primary" or "secondary", never omit it or leave it blank.
+
+For each entity with combined_score >= 60, provide:
+- "alignment": "primary" or "secondary"
+- "why": 2-3 sentences — for primary: which hidden interest is directly served and which MO tactics are present; for secondary: how the post's spread indirectly benefits this entity
+- "missing": 2-3 sentences on what relevant context this post conspicuously omits
+
+For entities with combined_score < 60, still include them with scores but "why", "missing", and "alignment" can be empty strings.
+
+Also assess (only needed once — include in first batch response):
+- text_ai_score (1-10): probability the text was AI-generated
+- text_ai_reason: one sentence of evidence
+
+Respond ONLY with valid JSON, no preamble, no markdown:
+{
+  "text_ai_score": 5,
+  "text_ai_reason": "...",
+  "matches": [
+    {
+      "id": 2,
+      "name": "Hamas",
+      "narrative": 92,
+      "interest": 95,
+      "mo": 88,
+      "pct": 91,
+      "alignment": "primary",
+      "why": "...",
+      "missing": "..."
+    }
+  ]
+}`,
+  coherence: `You are a senior geopolitical analyst. A scoring engine has identified the following entities as potentially aligned with a social media post. Your job is to apply a coherence filter — a single post can only realistically serve one coherent political direction at a time.
+
+SOCIAL MEDIA POST TEXT:
+"\${postText}"
+
+CANDIDATE MATCHES (already scored):
+\${candidateSummary}
+
+ENTITY RELATIONSHIPS TO CONSIDER:
+- Iran, Hamas, Hezbollah, PIJ, Houthis, Muslim Brotherhood form the "Axis of Resistance" — they share interests
+- Israeli Opposition, Protest Movement, Hostage Families, Lieberman, Israeli Left are anti-Netanyahu Israeli domestic voices — they share interests
+- Netanyahu government, Ben Gvir/Smotrich, AIPAC, Evangelical Zionists, US pro-Israel bloc share interests BUT have distinct sub-interests
+- Palestinian Authority / Fatah and Hamas are RIVALS
+- Israel and Iran are RIVALS
+- US pro-Israel bloc (Trump, Rubio, Vance, AIPAC) and US Progressive Caucus (AOC) are RIVALS on this issue
+- Russia and China benefit opportunistically but are not part of any primary bloc
+- Human rights orgs (Amnesty, HRW, B'Tselem, ICC/ICJ) operate independently but often align with criticism of Israeli military conduct
+- AOC/Progressive Caucus may align with human rights orgs and Israeli left — but NOT with Iran or Hamas
+
+INTRA-COALITION DISTINCTION — CRITICAL:
+Entities in the same broad coalition can have conflicting sub-interests. Treat them as distinct:
+- A post criticizing Netanyahu from the RIGHT (settlers demanding harder enforcement, sovereignty language, West Bank infrastructure) aligns with Ben Gvir/Smotrich and the Settler Movement — but NOT with Netanyahu himself, who is being criticized
+- A post criticizing Netanyahu from the LEFT (hostage deal, judicial reform, democratic norms) aligns with Israeli Opposition/Protest Movement — but NOT with Iran or Hamas even if they also oppose Netanyahu
+- Ben Gvir/Smotrich and Netanyahu share a coalition but have genuine tension — settler posts that demand action Netanyahu hasn't taken align with the former, not the latter
+
+TASK:
+1. Identify the single most coherent political direction this post serves
+2. Keep entities that genuinely fit that direction (including legitimate secondary/collateral beneficiaries)
+3. REMOVE entities that belong to rival blocs or whose specific interests don't fit this post's framing
+4. You may adjust the "alignment" field (primary/secondary) based on your coherence assessment
+5. Maximum 3 primary, 2 secondary in your final output
+
+CRITICAL: A post criticizing Netanyahu may align with Israeli opposition AND human rights orgs AND AOC — that is coherent. But it should NOT align with Iran or Hamas. A settler enforcement post aligns with Ben Gvir/Settler Movement — but NOT with Netanyahu if he is being pressured.
+
+Respond ONLY with valid JSON — the filtered list of matches to KEEP:
+{
+  "matches": [
+    {
+      "id": 51,
+      "name": "Israeli Opposition Bloc",
+      "pct": 91,
+      "alignment": "primary",
+      "why": "...",
+      "missing": "..."
+    }
+  ]
+}`,
+  connection: `You are a narrative analyst for Who's Behind That?, focused on the Israeli-Palestinian conflict and Israeli domestic politics.
+
+For each pair below, decide if there is a meaningful NARRATIVE CONNECTION. The bar is HIGH — connection requires more than topical overlap or being published on the same day about the same event.
+
+A REAL connection means:
+- The posts share the same specific framing goal (not just the same topic)
+- One post directly responds to or escalates the other's narrative
+- Both posts push the same specific claim or talking point
+- There are signs of coordination (same language, same framing, same sequence)
+
+NOT a connection:
+- Two posts about the same event from opposing camps (that's just the news cycle)
+- Two posts published on the same day about the same political figure
+- Topical similarity without shared narrative purpose
+
+\${pairsText}
+
+Respond ONLY with a JSON array, one object per pair, in order:
+[
+  {
+    "pair": 1,
+    "connected": true/false,
+    "connectionType": "narrative reinforcement"|"coordination signal"|"narrative escalation"|"explicit reference"|null,
+    "strength": "strong"|"medium"|"weak"|null,
+    "reasoning": "one sentence"
+  }
+]`,
+  synopsis: `Narrative analyst for Who's Behind That? (Israeli-Palestinian conflict / Israeli politics).
+
+These \${clusterPosts.length} posts share narrative connections. Synthesize them.
+
+\${postsText}
+
+Respond ONLY with valid JSON:
+{
+  "clusterName": "3-6 word name: [topic framing] · [entity]",
+  "synopsis": "2-4 sentences: what narrative is constructed, what pattern emerges, whose interests served",
+  "dominantEntity": "entity name",
+  "connectionType": "narrative reinforcement"|"coordination signal"|"narrative escalation"|"explicit reference",
+  "frame": "overarching frame/arc",
+  "event": "specific event or null",
+  "postSummaries": ["one sentence narrative summary for POST 1", "one sentence for POST 2", ...]
+}`,
+  convergent: `You are a senior geopolitical analyst. A social media post primarily serves: \${primaryNames}.
+
+Your task: identify whether this post touches on a RARE, SPECIFIC, HIGH-CONFIDENCE convergent interest between two entities that are NOT normally aligned — including rivals or enemies.
+
+THIS IS A HIGH BAR. The vast majority of posts should return { "found": false }. Only flag a convergent interest if you are highly confident (9/10 or above) that a neutral senior analyst would immediately agree with your assessment without hesitation.
+
+STRICT REQUIREMENTS — ALL must be met:
+1. The two entities must have genuinely opposing primary interests on most issues
+2. The convergent interest must be DIRECTLY caused by THIS SPECIFIC POST — not a general structural overlap
+3. The shared outcome must be named in one precise sentence, citing specific post content
+4. The connection requires zero inferential leaps — it must be immediately obvious
+5. At least one entity must NOT appear in the primary matches
+6. The connection cannot be explained by coalition membership or general ideological overlap
+
+EXPLICIT ANTI-EXAMPLES — these are NOT convergent interests:
+- Ben Gvir/Smotrich + Iran: they are absolute enemies. The fact that both oppose a two-state solution is NOT convergent — their reasons, methods and goals are completely incompatible. Do NOT flag this.
+- Any two entities that both "oppose" something (opposition is not convergence)
+- Entities that benefit from "instability" in general (too vague)
+- Rival entities where the connection requires assuming what each entity "secretly wants"
+- Any pair where the connection would be dismissed as conspiratorial by a mainstream analyst
+
+LEGITIMATE EXAMPLES (rare cases that actually meet the bar):
+- Netanyahu + Hamas: both have structurally benefited from each other remaining in power, preventing a two-state solution — this is documented by Israeli analysts
+- Israel + Saudi Arabia: documented secret security cooperation against Iran
+- Russia + Iran: documented military cooperation on drones and weapons
+
+SOCIAL MEDIA POST:
+"\${postText}"
+
+ENTITY DATABASE:
+\${entitySummaries}
+
+Before responding, ask yourself: "Would a Haaretz or Foreign Affairs editor immediately agree with this connection, or would they call it a stretch?" If any doubt — return { "found": false }.
+
+Respond ONLY with valid JSON:
+{
+  "found": true,
+  "confidence": 9,
+  "entityA": { "id": 1, "name": "..." },
+  "entityB": { "id": 3, "name": "..." },
+  "sharedOutcome": "Precise one sentence citing specific post content",
+  "explanation": "2-3 sentences. Must cite specific post phrases and each entity's documented interest.",
+  "isRivals": true
+}
+
+Or: { "found": false }`,
+  actor: `You are an open-source intelligence (OSINT) researcher. Research the following \${isNews ? 'journalist or public figure' : 'social media account'} and provide a factual profile.
+
+\${isNews ? \`Name/byline: \${handle}\` : \`Account handle: @\${handle}\`}
+\${context}
+
+Provide:
+1. name: Full real name (if publicly known). If unknown, use the handle.
+2. bio: Factual 2-paragraph summary — background, what they are known for, political or ideological stance, notable work or affiliations. If anonymous or low-profile, state that clearly.
+3. location: Country or city (if publicly known). "Unknown" if not established.
+4. handles: Array of known social media handles, websites, or other online presence. Format: "X: @handle", "Website: domain.com". Only verified or highly likely matches.
+
+Be factual and neutral. Do not speculate beyond what is publicly known.
+
+Respond ONLY with valid JSON:
+{
+  "name": "...",
+  "bio": "...",
+  "location": "...",
+  "handles": ["X: @handle"]
+}`,
+};
 const PROMPT_DISPLAY_NAMES = {
   scan: 'Scan', coherence: 'Coherence', connection: 'Connection',
   synopsis: 'Synopsis', actor: 'Actor', convergent: 'Convergent Interest'
@@ -3091,7 +3358,7 @@ async function renderPromptsPage() {
           '<span style="font-family:var(--mono);font-size:10px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(26,107,255,.2);border-radius:99px;padding:2px 8px">v' + version + '</span>' +
           '<span style="font-size:11px;color:var(--text3)">' + model + '</span>' +
           '<span style="font-size:10px;color:var(--text3);margin-left:auto">Last saved: ' + updated + '</span>' +
-          '<button onclick="openPromptEditor(\'' + name + '\')" class="btn btn-sm btn-primary" style="font-size:11px">' + (hasPrompt ? 'Edit' : 'Seed') + '</button>' +
+          '<button onclick="openPromptEditor(\'' + name + '\')" class="btn btn-sm btn-primary" style="font-size:11px">Edit</button>' +
         '</div>' +
         (hasPrompt ? '<div style="margin-top:8px;font-size:10px;color:var(--text3);font-family:var(--mono);background:var(--bg2);border-radius:var(--radius-sm);padding:6px 8px;max-height:60px;overflow:hidden;line-height:1.5">' + escHtml(p.prompt_text.slice(0, 200)) + '...</div>' : '') +
       '</div>';
@@ -3152,7 +3419,7 @@ function openPromptEditor(name) {
     document.getElementById('prompt-modal-version').value = '1.0.0';
   }
   document.getElementById('prompt-modal-model').value = p ? p.model : PROMPT_MODELS[name];
-  document.getElementById('prompt-modal-text').value = p ? p.prompt_text : '';
+  document.getElementById('prompt-modal-text').value = p ? p.prompt_text : (HARDCODED_PROMPTS[name] || '');
   document.getElementById('prompt-edit-modal').style.display = 'flex';
 }
 

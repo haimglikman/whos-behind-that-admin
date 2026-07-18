@@ -1,5 +1,9 @@
 ## Changelog
 
+### v2.16.0 (admin) | Server: v1.22.4 | Client: 1.17.0
+- About & Setup: new "Deployed versions" section at top — shows app, server, entities, and all prompt versions with last updated date in DD/MM/YYYY format
+- Renders live from server on each visit to the About tab
+
 ### v2.15.1 — bug fix (admin) | Server: v1.22.4
 - Prompts tab: Edit modal now pre-fills with current hardcoded prompt text when no DB version exists — just click Edit and Save, no copy-pasting needed
 - Button label changed from "Seed" to "Edit" for all prompts

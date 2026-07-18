@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.16.0</div>
+      <div class="version-badge" id="version-badge">v2.16.1</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -788,7 +788,70 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <h2>Changelog</h2>
 
           <div class="changelog-item">
+            <div class="changelog-ver">v2.16.0</div>
+            <div class="changelog-date">Current version</div>
+            <ul>
+              <li><strong>Deployed versions panel:</strong> New section in About & Setup showing live versions of app, server, entities, and all AI prompts with last updated timestamp.</li>
+              <li><strong>Prompts tab improvements:</strong> Edit modal pre-fills current prompt text; all 6 prompts editable without redeploy.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.15.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>New Prompts tab</strong> between Entity Database and FAQ — view, edit, and version all 6 AI prompts (Scan, Coherence, Connection, Synopsis, Actor, Convergent Interest).</li>
+              <li><strong>Model selector</strong> per prompt (Haiku / Sonnet / Opus). Changes activate on the live server immediately without redeploy.</li>
+              <li><strong>Prompt history sub-tab</strong> with rollback to any previous version.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.14.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Live production release</strong> — all dev v2.13.x features promoted to live.</li>
+              <li><strong>Entity sync:</strong> Entity saves, refreshes, and imports now push to server DB — client always uses the latest entity list.</li>
+              <li><strong>YouTube support:</strong> Direct YouTube URLs and embedded videos in news articles now transcribed and included in analysis.</li>
+              <li><strong>Favicon and tab title</strong> updated for live deployment.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.13.0 — DEV</div>
+            <div class="changelog-date">Development versions (promoted to live as v2.14.0)</div>
+            <ul>
+              <li><strong>Cluster investigation tab:</strong> Post basket, pending banner with post list, auto-run on "Run investigation", results persist across navigation.</li>
+              <li><strong>Cluster history tab:</strong> Cross-device reconstruction using saved posts array; P-numbers preserved in postIds order; connections, frame, event shown.</li>
+              <li><strong>Y-axis entity timeline:</strong> Entity lanes on Y-axis, date on X-axis, hover popup with post details, secondary entity in legend.</li>
+              <li><strong>Version filters:</strong> From/up to range dropdowns populated from real history data (semver comparison).</li>
+              <li><strong>FAQ system:</strong> Server-side FAQ with full CRUD editor; 32 default FAQs seeded across 4 groups.</li>
+              <li><strong>DD/MM/YYYY dates</strong> throughout. Stale version in bottom bar fixed.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.12.0 — DEV</div>
+            <div class="changelog-date">Development versions</div>
+            <ul>
+              <li><strong>Cluster synthesis pipeline:</strong> Haiku detection + Sonnet synthesis. Cluster DB table with connections, frame, event, synopsis, dominant entity.</li>
+              <li><strong>Cluster history:</strong> View, rename, and reopen past cluster investigations.</li>
+              <li><strong>Top nav bar</strong> migrated from sidebar. Investigate tab added.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.11.0 — DEV</div>
+            <div class="changelog-date">Development versions</div>
+            <ul>
+              <li><strong>Investigate feature:</strong> Select posts for investigation, pairwise connection detection, cluster grouping.</li>
+              <li><strong>Timeline visualization:</strong> X=time, Y=entity lanes groundwork.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
             <div class="changelog-ver">v2.10.0</div>
+            <div class="changelog-date">Previous version</div>
             <div class="changelog-date">Previous version</div>
             <ul>
               <li><strong>Entity refresh:</strong> New "✦ Refresh entities" button — sends all entities to Claude with web search in batches, updates changed fields automatically.</li>
@@ -1391,7 +1454,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.16.0';
+const APP_VERSION = '2.16.1';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -2586,6 +2649,9 @@ function clearFilters() {
   ['f-platform','f-alignment','f-has-comment','f-source','f-user'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
   ['f-app-version','f-app-version-to','f-server-version','f-server-version-to','f-scan-id','f-url','f-date-from','f-date-to','f-min-score','f-min-ai','f-actor'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
   selectedEntities=[];
+  const entitySearch = document.getElementById('f-entity-search');
+  if (entitySearch) entitySearch.value = '';
+  closeEntityDropdown();
   renderEntityTags();
   applyFilters();
 }

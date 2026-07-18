@@ -1,5 +1,9 @@
 ## Changelog
 
+### v2.16.1 — bug fix (admin) | Server: v1.22.6 | Client: v1.17.2
+- Post history: entity filter tags now cleared properly when clicking "Clear filters"
+- About & Setup: changelog updated retroactively with all versions from v2.10.1 to v2.16.0
+
 ### v2.16.0 (admin) | Server: v1.22.4 | Client: 1.17.0
 - About & Setup: new "Deployed versions" section at top — shows app, server, entities, and all prompt versions with last updated date in DD/MM/YYYY format
 - Renders live from server on each visit to the About tab

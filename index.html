@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.16.1</div>
+      <div class="version-badge" id="version-badge">v2.16.2</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -528,7 +528,9 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
             </div>
             <div class="filter-group">
               <div class="filter-label">Actor handle</div>
-              <input type="text" class="filter-input" id="f-actor" placeholder="e.g. @khamenei" oninput="applyFilters()" />
+              <select class="filter-input" id="f-actor" onchange="applyFilters()" style="width:100%">
+                <option value="">All actors</option>
+              </select>
             </div>
           </div>
           <!-- Entity multi-select — full width row -->
@@ -678,7 +680,12 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <div style="background:var(--surface);border-radius:var(--radius);padding:24px;width:560px;max-width:90vw;max-height:90vh;overflow:auto;box-shadow:0 8px 32px rgba(0,0,0,.2)">
             <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px" id="faq-modal-title">Add FAQ</div>
             <div class="card-label">Group</div>
-            <input type="text" class="url-input" id="faq-group" placeholder="e.g. Terminology, Scanning logic, Privacy" style="margin-bottom:12px;width:100%" />
+            <select class="url-input" id="faq-group" style="margin-bottom:12px;width:100%">
+              <option value="Terminology">Terminology</option>
+              <option value="Scanning logic">Scanning logic</option>
+              <option value="Technical">Technical</option>
+              <option value="Privacy">Privacy</option>
+            </select>
             <div class="card-label">Question</div>
             <input type="text" class="url-input" id="faq-question" placeholder="What is...?" style="margin-bottom:12px;width:100%" />
             <div class="card-label">Answer</div>
@@ -1454,7 +1461,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.16.1';
+const APP_VERSION = '2.16.2';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -2647,10 +2654,20 @@ function applyFilters() {
 
 function clearFilters() {
   ['f-platform','f-alignment','f-has-comment','f-source','f-user'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
-  ['f-app-version','f-app-version-to','f-server-version','f-server-version-to','f-scan-id','f-url','f-date-from','f-date-to','f-min-score','f-min-ai','f-actor'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
+  ['f-app-version','f-app-version-to','f-server-version','f-server-version-to','f-scan-id','f-url','f-date-from','f-date-to','f-min-score','f-min-ai'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
+  const actorSel = document.getElementById('f-actor'); if (actorSel) actorSel.value = '';
   selectedEntities=[];
   const entitySearch = document.getElementById('f-entity-search');
   if (entitySearch) entitySearch.value = '';
+  // Re-render dropdown to uncheck all checkboxes
+  const dropdown = document.getElementById('f-entity-dropdown');
+  if (dropdown) {
+    dropdown.querySelectorAll('.entity-option').forEach(function(opt){
+      opt.classList.remove('selected');
+      const cb = opt.querySelector('input[type="checkbox"]');
+      if (cb) cb.checked = false;
+    });
+  }
   closeEntityDropdown();
   renderEntityTags();
   applyFilters();
@@ -3140,32 +3157,41 @@ async function renderDeployedVersions() {
   const serverUrl = getServerUrl();
   const fmt = function(ts) {
     if (!ts) return '—';
-    const d = new Date(ts);
-    return d.toLocaleDateString('en-GB', {day:'2-digit',month:'2-digit',year:'numeric'});
+    return new Date(ts).toLocaleDateString('en-GB', {day:'2-digit',month:'2-digit',year:'numeric'});
   };
 
   function versionCard(label, version, timestamp, extra) {
     return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px">' +
       '<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">' + escHtml(label) + '</div>' +
-      '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--blue);margin-bottom:2px">v' + escHtml(version||'—') + '</div>' +
-      '<div style="font-size:10px;color:var(--text3)">' + fmt(timestamp) + (extra ? ' · ' + escHtml(extra) : '') + '</div>' +
+      '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--blue);margin-bottom:2px">v' + escHtml(String(version||'—')) + '</div>' +
+      '<div style="font-size:10px;color:var(--text3)">' + fmt(timestamp) + (extra ? ' · ' + escHtml(String(extra)) : '') + '</div>' +
     '</div>';
   }
 
-  // Start with static app version
   const cards = [];
   cards.push(versionCard('App (Admin)', APP_VERSION, null, null));
 
   try {
-    // Server version
-    const healthRes = await fetch(serverUrl + '/');
+    const [healthRes, clientRes, entRes, promptRes] = await Promise.all([
+      fetch(serverUrl + '/'),
+      fetch(serverUrl + '/client/sessions'),
+      fetch(serverUrl + '/entities/list'),
+      fetch(serverUrl + '/prompts/list')
+    ]);
+
     if (healthRes.ok) {
-      const health = await healthRes.json();
-      cards.push(versionCard('Server', health.version, null, null));
+      const h = await healthRes.json();
+      cards.push(versionCard('Server', h.version, null, null));
     }
 
-    // Entities version
-    const entRes = await fetch(serverUrl + '/entities/list');
+    // Client sessions — one card per unique version
+    if (clientRes.ok) {
+      const cd = await clientRes.json();
+      (cd.sessions || []).forEach(function(s) {
+        cards.push(versionCard('Client', s.client_version, s.last_seen, s.device_count + ' device' + (s.device_count > 1 ? 's' : '')));
+      });
+    }
+
     if (entRes.ok) {
       const entData = await entRes.json();
       if (entData.success) {
@@ -3173,8 +3199,6 @@ async function renderDeployedVersions() {
       }
     }
 
-    // Prompt versions
-    const promptRes = await fetch(serverUrl + '/prompts/list');
     if (promptRes.ok) {
       const promptData = await promptRes.json();
       const promptNames = { scan:'Scan', coherence:'Coherence', connection:'Connection', synopsis:'Synopsis', actor:'Actor', convergent:'Convergent Interest' };
@@ -3646,7 +3670,7 @@ function openFaqEditor(id, question, answer, group, sortOrder) {
   document.getElementById('faq-edit-id').value = id || '';
   document.getElementById('faq-question').value = question || '';
   document.getElementById('faq-answer').value = answer || '';
-  document.getElementById('faq-group').value = group || 'General';
+  document.getElementById('faq-group').value = group || 'Terminology';
   document.getElementById('faq-sort').value = sortOrder || 0;
   document.getElementById('faq-modal-title').textContent = id ? 'Edit FAQ' : 'Add FAQ';
   const modal = document.getElementById('faq-modal');
@@ -4107,6 +4131,20 @@ function openHistoryEntry(id) {
 
 function renderHistory() {
   populateVersionDropdowns();
+  // Populate actor dropdown from actors DB
+  const actorSel = document.getElementById('f-actor');
+  if (actorSel) {
+    const actors = getActors();
+    const cur = actorSel.value;
+    actorSel.innerHTML = '<option value="">All actors</option>';
+    Object.values(actors).sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); }).forEach(function(a) {
+      const opt = document.createElement('option');
+      opt.value = a.handle || a.name || '';
+      opt.textContent = (a.name || '') + (a.handle ? ' (' + a.handle + ')' : '');
+      actorSel.appendChild(opt);
+    });
+    if (cur) actorSel.value = cur;
+  }
   applyFilters();
 }
 

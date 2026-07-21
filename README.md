@@ -1,5 +1,8 @@
 ## Changelog
 
+### v2.16.3 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
+- Post history actor dropdown now fetches all actors from server (all clients) instead of admin's localStorage only — was showing only 1 of 7 actors
+
 ### v2.16.2 (admin) | Server: v1.22.7 | Client: v1.17.3
 - Deployed versions: client versions now shown between Admin and Server, with device count and last seen date
 - Deployed versions: all 4 fetches now run in parallel (faster loading)

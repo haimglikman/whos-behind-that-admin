@@ -1,5 +1,12 @@
 ## Changelog
 
+### v2.16.2 (admin) | Server: v1.22.7 | Client: v1.17.3
+- Deployed versions: client versions now shown between Admin and Server, with device count and last seen date
+- Deployed versions: all 4 fetches now run in parallel (faster loading)
+- FAQ: group field changed from free text to dropdown (Terminology / Scanning logic / Technical / Privacy)
+- Post history: entity filter checkboxes now visually unchecked when Clear filters is clicked
+- Post history: actor filter changed from free text to dropdown populated from the Actors tab
+
 ### v2.16.1 — bug fix (admin) | Server: v1.22.6 | Client: v1.17.2
 - Post history: entity filter tags now cleared properly when clicking "Clear filters"
 - About & Setup: changelog updated retroactively with all versions from v2.10.1 to v2.16.0

@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.16.2</div>
+      <div class="version-badge" id="version-badge">v2.16.3</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1461,7 +1461,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.16.2';
+const APP_VERSION = '2.16.3';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -4131,19 +4131,29 @@ function openHistoryEntry(id) {
 
 function renderHistory() {
   populateVersionDropdowns();
-  // Populate actor dropdown from actors DB
+  // Populate actor dropdown from server (all clients' actors)
+  const serverUrl = getServerUrl();
   const actorSel = document.getElementById('f-actor');
-  if (actorSel) {
-    const actors = getActors();
-    const cur = actorSel.value;
-    actorSel.innerHTML = '<option value="">All actors</option>';
-    Object.values(actors).sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); }).forEach(function(a) {
-      const opt = document.createElement('option');
-      opt.value = a.handle || a.name || '';
-      opt.textContent = (a.name || '') + (a.handle ? ' (' + a.handle + ')' : '');
-      actorSel.appendChild(opt);
-    });
-    if (cur) actorSel.value = cur;
+  if (actorSel && serverUrl) {
+    fetch(serverUrl + '/actors/list')
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        const cur = actorSel.value;
+        actorSel.innerHTML = '<option value="">All actors</option>';
+        const seen = new Set();
+        (data.actors || []).forEach(function(a) {
+          const handle = (a.handle || '').trim();
+          const name = (a.actorData && a.actorData.name) ? a.actorData.name : handle;
+          if (!handle || seen.has(handle.toLowerCase())) return;
+          seen.add(handle.toLowerCase());
+          const opt = document.createElement('option');
+          opt.value = handle;
+          opt.textContent = name + (name !== handle ? ' (' + handle + ')' : '');
+          actorSel.appendChild(opt);
+        });
+        if (cur) actorSel.value = cur;
+      })
+      .catch(function(){});
   }
   applyFilters();
 }

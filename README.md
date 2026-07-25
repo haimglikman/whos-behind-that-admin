@@ -1,5 +1,11 @@
 ## Changelog
 
+### v2.17.0 (admin) | Server: v1.22.7 | Client: v1.17.3
+- New Marketing tab: lists all saved clusters with "Generate carousel" button per cluster
+- Carousel generation: renders all slides on Canvas (hook → post×N → cluster → summary) and exports as a ZIP of JPEGs ready to upload to Instagram
+- Stats tab removed — content moved to About & Setup between Deployed versions and Changelog
+- Slide designs match the finalized carousel spec (dark navy for hook/summary, baby blue for post/cluster, Georgia/Arial/Consolas fonts)
+
 ### v2.16.3 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
 - Post history actor dropdown now fetches all actors from server (all clients) instead of admin's localStorage only — was showing only 1 of 7 actors
 

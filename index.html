@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.17.3</div>
+      <div class="version-badge" id="version-badge">v2.17.4</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1463,7 +1463,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.17.3';
+const APP_VERSION = '2.17.4';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -3112,7 +3112,7 @@ async function saveClusterToServer(synthesis, postIds, isolatedPostIds, connecti
   const allIds = (postIds||[]).concat(isolatedPostIds||[]);
   const postsArr = allIds.map(function(scanId) {
     const p = (basket||[]).find(function(e){ return e.scanId === scanId; }) || {};
-    return { scanId, url: p.url||'', topMatches: p.topMatches||[], overallScore: p.overallScore||0, ts: p.ts||'' };
+    return { scanId, url: p.url||'', topMatches: p.topMatches||[], overallScore: p.overallScore||0, ts: p.ts||'', source: p.source||'', _summary: p._summary||'' };
   });
   try {
     await fetch(serverUrl + '/clusters/save', {
@@ -3172,27 +3172,43 @@ async function generateCarousel(clusterId) {
 
   toast('Generating slides...');
 
+  // Enrich posts with postSummaries from cluster (keyed by postId order)
+  const postSummaries = c.postSummaries || [];
+  const includedIds = new Set(c.postIds||[]);
+  const enrichedPosts = posts.map(function(p) {
+    const idx = (c.postIds||[]).indexOf(p.scanId);
+    const summary = idx >= 0 ? (postSummaries[idx]||p._summary||'') : (p._summary||'');
+    return Object.assign({}, p, { _summary: summary });
+  });
+
   const date = c.ts ? new Date(c.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) : new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});
   const clusterName = c.clusterName || c.connectionType || 'Narrative cluster';
 
   const canvases = [];
-
-  // 1. Hook slide
   canvases.push(drawHookSlide(date, clusterName));
-
-  // 2. Post slides
-  posts.forEach(function(p) {
-    canvases.push(drawPostSlide(p, date));
-  });
-
-  // 3. Cluster slide
-  canvases.push(drawClusterSlide(c, posts, date));
-
-  // 4. Summary slide
+  enrichedPosts.forEach(function(p) { canvases.push(drawPostSlide(p, date)); });
+  canvases.push(drawClusterSlide(c, enrichedPosts, date));
   canvases.push(drawSummarySlide());
 
-  // Export as ZIP
   await exportCarouselZip(canvases, clusterName);
+
+  // Show in Marketing tab
+  const el = document.getElementById('marketing-list');
+  if (el) {
+    const genDate = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const entry = '<div class="card" style="margin-bottom:10px;padding:12px 16px;border-left:3px solid var(--blue)">' +
+      '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">' + escHtml(clusterName) + '</div>' +
+          '<div style="font-size:11px;color:var(--text3)">Generated ' + genDate + ' · ' + canvases.length + ' slides · downloaded as ZIP</div>' +
+        '</div>' +
+        '<button class="btn btn-sm" style="font-size:11px" onclick="generateCarousel(\'' + escHtml(clusterId) + '\')">Regenerate</button>' +
+      '</div>' +
+    '</div>';
+    // Replace placeholder text if present
+    if (el.querySelector('div[style*="padding:20px"]')) el.innerHTML = '';
+    el.insertAdjacentHTML('afterbegin', entry);
+  }
 }
 
 function makeDarkBg(ctx) {
@@ -3376,15 +3392,19 @@ function drawClusterSlide(c, posts, date) {
     y+=42;
     const included=includedIds.has(p.scanId);
     const entity=(p.topMatches&&p.topMatches[0])?p.topMatches[0]:(p.overallLabel||'Unknown');
-    const summary=included?(p._summary||'').slice(0,80):('No narrative connection detected');
+    const summary=(p._summary||'').slice(0,70);
     // Line 1: P# + entity
     ctx.font='22px Consolas,monospace';ctx.fillStyle='rgba(26,107,255,0.5)';ctx.fillText('P'+(i+1),M,y);
     const idW=ctx.measureText('P'+(i+1)+'  ').width;
     ctx.font='500 22px Georgia,serif';ctx.fillStyle=included?'#0c447c':'#4a7fd4';ctx.fillText(entity,M+idW,y);
-    // Line 2: summary
-    if(summary){
-      y+=30;
-      ctx.font='20px Arial,sans-serif';ctx.fillStyle='#0c2e52';ctx.fillText(summary,M+idW,y);
+    if(!included){
+      // excluded: show on same line
+      const entW=ctx.measureText(entity).width;
+      ctx.font='20px Arial,sans-serif';ctx.fillStyle='rgba(12,68,124,0.4)';ctx.fillText('  · No narrative connection detected',M+idW+entW,y);
+    } else if(summary){
+      // included: show summary on line 2
+      y+=28;
+      ctx.font='italic 20px Arial,sans-serif';ctx.fillStyle='#0c2e52';ctx.fillText(summary,M+idW,y);
     }
   });
   y+=12;
@@ -3398,13 +3418,7 @@ function drawClusterSlide(c, posts, date) {
   drawScoreRow(ctx,confidence,'Coordination confidence');
   drawFooterLight(ctx);
 
-  // Exclusion disclaimer
-  const excluded=posts.filter(function(p){return !includedIds.has(p.scanId);});
-  if(excluded.length>0){
-    ctx.font='22px Arial,sans-serif';ctx.fillStyle='rgba(12,68,124,0.4)';
-    const excIds=excluded.map(function(p,i){return 'P'+(posts.indexOf(p)+1);}).join(', ');
-    ctx.fillText(excIds+' excluded — no narrative connection detected',M,H-M+30);
-  }
+
   return canvas;
 }
 
@@ -3420,9 +3434,15 @@ function drawSummarySlide() {
   const titleSz=64, urlSz=48, noteSz=30;
   const titleH=titleSz*1.35*2, urlH=urlSz+16, noteH=noteSz+12;
   const startY=(H-(titleH+urlH+noteH))/2+titleSz;
-  ctx.font='500 '+titleSz+'px Georgia,serif';ctx.fillStyle='#ffffff';
-  ctx.fillText("See who's really",M,startY);
-  ctx.fillStyle='#4d8fff';ctx.fillText('behind the story.',M,startY+titleSz*1.35);
+  const titlePart1="See who's really ";
+  const titlePart2='behind the story.';
+  const titleFull=titlePart1+titlePart2;
+  let tSz=titleSz;
+  ctx.font='500 '+tSz+'px Georgia,serif';
+  while(ctx.measureText(titleFull).width>W-2*M&&tSz>30){tSz--;ctx.font='500 '+tSz+'px Georgia,serif';}
+  const tp1w=ctx.measureText(titlePart1).width;
+  ctx.fillStyle='#ffffff';ctx.fillText(titlePart1,M,startY);
+  ctx.fillStyle='#4d8fff';ctx.fillText(titlePart2,M+tp1w,startY);
   ctx.font=urlSz+'px Arial,sans-serif';ctx.fillStyle='#9dc2ff';
   ctx.fillText('whosbehindthat.com',M,startY+titleH+10);
   ctx.font=noteSz+'px Arial,sans-serif';ctx.fillStyle='rgba(200,215,240,0.6)';

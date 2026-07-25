@@ -1,5 +1,9 @@
 ## Changelog
 
+### v2.17.2 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
+- Fixed: generateCarousel now loads cluster data from server DB instead of localStorage
+- Fixed: Marketing tab now appears next to About & Setup, not at the bottom of the sidebar
+
 ### v2.17.1 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
 - Fixed: Marketing nav tab was missing from sidebar (Stats nav replacement failed in v2.17.0)
 - Fixed: Stats tab properly removed

@@ -1,5 +1,14 @@
 ## Changelog
 
+### v2.17.4 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
+- Marketing tab: generated carousels now appear in the tab with generation date and slide count
+- Marketing tab: Regenerate button per generated carousel
+- Post slide: post summary now correctly pulled from cluster's postSummaries array
+- Cluster slide: excluded posts shown on same line as entity, no redundant bottom disclaimer
+- Cluster slide: included posts show summary on second line under entity
+- Summary slide: title auto-fits to one line (no wrapping)
+- postsArr now saves _summary and source fields when cluster is stored
+
 ### v2.17.3 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
 - Marketing tab now empty by default — generate carousels from Clusters history only
 - Marketing and About & Setup tabs swapped in sidebar order

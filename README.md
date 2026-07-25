@@ -1,5 +1,10 @@
 ## Changelog
 
+### v2.17.1 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
+- Fixed: Marketing nav tab was missing from sidebar (Stats nav replacement failed in v2.17.0)
+- Fixed: Stats tab properly removed
+- Fixed: Generate carousel button now appears on each cluster card in Cluster history
+
 ### v2.17.0 (admin) | Server: v1.22.7 | Client: v1.17.3
 - New Marketing tab: lists all saved clusters with "Generate carousel" button per cluster
 - Carousel generation: renders all slides on Canvas (hook → post×N → cluster → summary) and exports as a ZIP of JPEGs ready to upload to Instagram

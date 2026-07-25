@@ -1,5 +1,12 @@
 ## Changelog
 
+### v2.17.3 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
+- Marketing tab now empty by default — generate carousels from Clusters history only
+- Marketing and About & Setup tabs swapped in sidebar order
+- Post slide: summary now shown correctly under entity name with left accent bar
+- Cluster slide: post summary shown on second line under each entity in legend
+- Cluster slide: half-line spacing added below CONNECTION TYPE and SERVES labels
+
 ### v2.17.2 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
 - Fixed: generateCarousel now loads cluster data from server DB instead of localStorage
 - Fixed: Marketing tab now appears next to About & Setup, not at the bottom of the sidebar

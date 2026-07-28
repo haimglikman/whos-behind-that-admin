@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.17.6</div>
+      <div class="version-badge" id="version-badge">v2.17.7</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1463,7 +1463,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.17.6';
+const APP_VERSION = '2.17.7';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -3339,38 +3339,32 @@ function drawClusterSlide(c, posts, date) {
   makeLightBg(ctx);
   ctx.textBaseline='alphabetic';ctx.textAlign='left';
 
-  // Metadata
+  // Metadata — tighter line height
   const clDate = c.ts ? new Date(c.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) : date;
   const postIds = (c.postIds||[]).map(function(_,i){return 'P'+(i+1);}).join(', ');
   const meta=[['Cluster',c.id||''],['Posts',postIds],['Detected',clDate]];
-  let my=M+28;
+  let my=M+32;
   meta.forEach(function(kv){
     ctx.font='26px Consolas,monospace';ctx.fillStyle='#4a7fd4';ctx.fillText(kv[0]+':  ',M,my);
     const lw=ctx.measureText(kv[0]+':  ').width;
     ctx.fillStyle='#0c447c';ctx.font='600 26px Consolas,monospace';ctx.fillText(kv[1],M+lw,my);
-    my+=38;
+    my+=34;
   });
 
-  // Vertically center analysis block
-  const blockTop=my+16, blockBottom=H-M-150;
-  const blockH=blockBottom-blockTop;
-  const contentEstH=520;
-  let y=blockTop+Math.max(0,(blockH-contentEstH)/2);
+  let y=my+40;
 
   // Connection type
-  ctx.font='22px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('CONNECTION TYPE',M,y+22);y+=64;
-  ctx.font='500 44px Georgia,serif';ctx.fillStyle='#0c447c';
-  let csz=44;ctx.font='500 '+csz+'px Georgia,serif';
+  ctx.font='20px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('CONNECTION TYPE',M,y+20);y+=52;
+  let csz=48;ctx.font='500 '+csz+'px Georgia,serif';
   while(ctx.measureText(c.connectionType||'').width>W-2*M&&csz>24){csz--;ctx.font='500 '+csz+'px Georgia,serif';}
-  ctx.fillText(c.connectionType||'Narrative reinforcement',M,y);y+=csz+16;
+  ctx.fillStyle='#0c447c';ctx.fillText(c.connectionType||'Narrative reinforcement',M,y);y+=csz+8;
 
-  // Nodes — all posts, included if in postIds
-  const allPostIds = posts.map(function(p){return p.scanId;});
+  // Nodes
   const includedIds = new Set(c.postIds||[]);
   const nR=36;
   const nW=W-2*M;
   const connGap=(nW-posts.length*nR*2)/(posts.length-1||1);
-  const nCY=y+nR+10;
+  const nCY=y+nR+8;
   posts.forEach(function(p,i){
     const nx=M+nR+i*(nR*2+connGap);
     const included=includedIds.has(p.scanId);
@@ -3384,46 +3378,56 @@ function drawClusterSlide(c, posts, date) {
     ctx.beginPath();ctx.arc(nx,nCY,nR,0,Math.PI*2);
     ctx.fillStyle=included?'#1a6bff':'rgba(12,68,124,0.12)';ctx.fill();
     if(!included){ctx.strokeStyle='rgba(12,68,124,0.3)';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);}
-    ctx.font='500 26px Arial,sans-serif';ctx.fillStyle=included?'#fff':'#4a7fd4';
+    ctx.font='500 24px Arial,sans-serif';ctx.fillStyle=included?'#fff':'#4a7fd4';
     ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('P'+(i+1),nx,nCY);
     ctx.textAlign='left';ctx.textBaseline='alphabetic';
   });
-  y=nCY+nR+20;
+  y=nCY+nR+16;
 
   // Legend
   ctx.strokeStyle='rgba(26,107,255,0.18)';ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();y+=8;
+  ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();y+=10;
   posts.forEach(function(p,i){
-    y+=42;
+    y+=36;
     const included=includedIds.has(p.scanId);
     const entity=(p.topMatches&&p.topMatches[0])?p.topMatches[0]:(p.overallLabel||'Unknown');
     const summary=(p._summary||'').slice(0,70);
-    // Line 1: P# + entity
-    ctx.font='22px Consolas,monospace';ctx.fillStyle='rgba(26,107,255,0.5)';ctx.fillText('P'+(i+1),M,y);
+    ctx.font='20px Consolas,monospace';ctx.fillStyle='rgba(26,107,255,0.5)';ctx.fillText('P'+(i+1),M,y);
     const idW=ctx.measureText('P'+(i+1)+'  ').width;
-    ctx.font='500 22px Georgia,serif';ctx.fillStyle=included?'#0c447c':'#4a7fd4';ctx.fillText(entity,M+idW,y);
+    ctx.font='500 20px Georgia,serif';ctx.fillStyle=included?'#0c447c':'#4a7fd4';ctx.fillText(entity,M+idW,y);
     if(!included){
-      // excluded: show on same line
       const entW=ctx.measureText(entity).width;
-      ctx.font='20px Arial,sans-serif';ctx.fillStyle='rgba(12,68,124,0.4)';ctx.fillText('  · No narrative connection detected',M+idW+entW,y);
+      ctx.font='19px Arial,sans-serif';ctx.fillStyle='rgba(12,68,124,0.4)';
+      ctx.fillText('  · No narrative connection detected',M+idW+entW,y);
     } else if(summary){
-      // included: show summary on line 2
-      y+=28;
-      ctx.font='italic 20px Arial,sans-serif';ctx.fillStyle='#0c2e52';ctx.fillText(summary,M+idW,y);
+      y+=26;
+      ctx.font='italic 19px Arial,sans-serif';ctx.fillStyle='#0c2e52';ctx.fillText(summary,M+idW,y);
     }
   });
-  y+=12;
-  ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();y+=18;
+  y+=16;
+  ctx.strokeStyle='rgba(26,107,255,0.18)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();y+=14;
 
   // Serves
-  ctx.font='22px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('SERVES',M,y+22);y+=64;
-  ctx.font='500 36px Georgia,serif';ctx.fillStyle='#0c447c';ctx.fillText(c.dominantEntity||'',M,y);
+  ctx.font='20px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('SERVES',M,y+18);y+=50;
+  let ssz=40;const servesTxt=c.dominantEntity||'';
+  ctx.font='500 '+ssz+'px Georgia,serif';
+  while(ctx.measureText(servesTxt).width>W-2*M&&ssz>24){ssz--;ctx.font='500 '+ssz+'px Georgia,serif';}
+  ctx.fillStyle='#0c447c';ctx.fillText(servesTxt,M,y);
 
+  // Score + divider anchored at bottom — divider just above 84%
   const confidence=Math.round(c.coherenceScore||c.confidence||0)||84;
-  drawScoreRow(ctx,confidence,'Coordination confidence');
+  const scoreY=H-M-10;
+  const dividerY=scoreY-42;
+  ctx.strokeStyle='rgba(26,107,255,0.18)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(M,dividerY);ctx.lineTo(W-M,dividerY);ctx.stroke();
+  ctx.font='500 40px Arial,sans-serif';ctx.fillStyle='#1a6bff';
+  ctx.textBaseline='alphabetic';ctx.fillText(confidence+'%',M,scoreY);
+  ctx.font='20px Arial,sans-serif';ctx.fillStyle='#4a7fd4';
+  ctx.textAlign='right';ctx.fillText('COORDINATION CONFIDENCE',W-M,scoreY);
+  ctx.textAlign='left';
+
   drawFooterLight(ctx);
-
-
   return canvas;
 }
 

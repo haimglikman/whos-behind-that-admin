@@ -1,5 +1,12 @@
 ## Changelog
 
+### v2.17.6 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
+- Fixed: carousel generation now auto-navigates to Marketing tab and shows the entry regardless of export errors
+- Export errors now shown as toast instead of silently failing
+
+### v2.17.5 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
+- Fixed: carousel not appearing in Marketing tab after generation — duplicate const el declaration caused silent error
+
 ### v2.17.4 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
 - Marketing tab: generated carousels now appear in the tab with generation date and slide count
 - Marketing tab: Regenerate button per generated carousel

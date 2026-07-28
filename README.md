@@ -1,5 +1,11 @@
 ## Changelog
 
+### v2.17.7 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
+- Cluster slide: tighter metadata line height, smaller gap to content block
+- Cluster slide: smaller gap between connection type and timeline nodes
+- Cluster slide: score (40px) and divider anchored at bottom — divider sits just above percentage
+- Cluster slide: entity name auto-fits to prevent overflow over divider
+
 ### v2.17.6 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
 - Fixed: carousel generation now auto-navigates to Marketing tab and shows the entry regardless of export errors
 - Export errors now shown as toast instead of silently failing

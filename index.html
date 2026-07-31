@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.17.8</div>
+      <div class="version-badge" id="version-badge">v2.17.9</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1463,7 +1463,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.17.8';
+const APP_VERSION = '2.17.9';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -3212,7 +3212,10 @@ async function generateCarousel(clusterId) {
 
   const canvases = [];
   canvases.push(drawHookSlide(date, clusterName));
-  enrichedPosts.forEach(function(p) { canvases.push(drawPostSlide(p, date)); });
+  enrichedPosts.forEach(function(p) {
+    const isExcluded = !includedIds.has(p.scanId);
+    canvases.push(drawPostSlide(p, date, isExcluded));
+  });
   canvases.push(drawClusterSlide(c, enrichedPosts, date));
   canvases.push(drawSummarySlide());
 
@@ -3288,29 +3291,37 @@ function drawHookSlide(date, clusterName) {
   const canvas = document.createElement('canvas');
   canvas.width = SLIDE_W; canvas.height = SLIDE_W;
   const ctx = canvas.getContext('2d');
-  const M=SLIDE_M,W=SLIDE_W;
+  const M=SLIDE_M,W=SLIDE_W,H=SLIDE_W;
   makeDarkBg(ctx);
   ctx.textBaseline='alphabetic';ctx.textAlign='left';
+
+  // Date top-left
   ctx.font='24px Arial,sans-serif';ctx.fillStyle='#c8d7f0';
   ctx.fillText(date,M,M+28);
 
+  // Center group: title + tag
   const part1='Who really benefits from ';
-  const part2='this week\'s headlines?';
+  const part2="this week's headlines?";
   const full=part1+part2;
   let sz=72;
   ctx.font='500 '+sz+'px Georgia,serif';
   while(ctx.measureText(full).width>W-2*M&&sz>20){sz--;ctx.font='500 '+sz+'px Georgia,serif';}
+  const tagSz=22;
+  const groupH=sz+20+tagSz;
+  const titleY=H/2-groupH/2+sz;
   const w1=ctx.measureText(part1).width;
-  const titleY=W*0.48;
   ctx.fillStyle='#ffffff';ctx.fillText(part1,M,titleY);
   ctx.fillStyle='#4d8fff';ctx.fillText(part2,M+w1,titleY);
-  ctx.font='32px Arial,sans-serif';ctx.fillStyle='#c8d7f0';
-  ctx.fillText(clusterName,M,titleY+sz*0.9);
-  drawFooterDark(ctx);
+  ctx.font=tagSz+'px Arial,sans-serif';ctx.fillStyle='#c8d7f0';
+  ctx.fillText(clusterName,M,titleY+20+tagSz);
+
+  // Footer
+  ctx.font='19px Arial,sans-serif';ctx.fillStyle='#c8d7f0';
+  ctx.fillText('whosbehindthat.com',M,H-M);
   return canvas;
 }
 
-function drawPostSlide(p, date) {
+function drawPostSlide(p, date, isExcluded) {
   const canvas = document.createElement('canvas');
   canvas.width = SLIDE_W; canvas.height = SLIDE_W;
   const ctx = canvas.getContext('2d');
@@ -3318,41 +3329,72 @@ function drawPostSlide(p, date) {
   makeLightBg(ctx);
   ctx.textBaseline='alphabetic';ctx.textAlign='left';
 
-  // Metadata
+  // Metadata top-left
   const platform = p.source || p.platform || 'Unknown';
   const url = p.url || '';
   const pubDate = p.ts ? new Date(p.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) : date;
   const postId = p.scanId || '';
-  const meta = [['ID', postId],['Platform', platform],['URL', url.replace(/^https?:\/\//,'').slice(0,40)+(url.length>43?'...':'')],['Published', pubDate]];
+  const meta=[['ID',postId],['Platform',platform],['URL',url.replace(/^https?:\/\//,'').slice(0,42)+(url.replace(/^https?:\/\//,'').length>42?'...':'')],['Published',pubDate]];
   let my=M+28;
   meta.forEach(function(kv){
-    ctx.font='26px Consolas,monospace';ctx.fillStyle='#4a7fd4';ctx.fillText(kv[0]+':  ',M,my);
+    ctx.font='17px Consolas,monospace';ctx.fillStyle='#4a7fd4';ctx.fillText(kv[0]+':  ',M,my);
     const lw=ctx.measureText(kv[0]+':  ').width;
-    ctx.fillStyle='#0c447c';ctx.font='600 26px Consolas,monospace';ctx.fillText(kv[1],M+lw,my);
-    my+=38;
+    ctx.fillStyle='#0c447c';ctx.font='500 17px Consolas,monospace';ctx.fillText(kv[1],M+lw,my);
+    my+=30;
   });
 
-  // Center group
-  const entity = (p.topMatches&&p.topMatches[0]) ? p.topMatches[0] : (p.overallLabel||'Unknown entity');
-  const summary = p._summary || '';
-  const score = Math.round(p.overallScore||0);
-  const cY=H*0.42;
-  ctx.font='22px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('SERVES',M,cY);
-  // spacing: half line below label
-  let esz=52;ctx.font='500 '+esz+'px Georgia,serif';
-  while(ctx.measureText(entity).width>W-2*M&&esz>24){esz--;ctx.font='500 '+esz+'px Georgia,serif';}
-  ctx.fillStyle='#0c447c';ctx.fillText(entity,M,cY+esz+10);
+  // Center group — vertically centered in remaining space above score row
+  const scoreAreaH=54+28+18+12; // score+footer+padding
+  const centerTop=my+20;
+  const centerBot=H-scoreAreaH-40;
+  const entity=(p.topMatches&&p.topMatches[0])?p.topMatches[0]:(p.overallLabel||'Unknown entity');
+  const summary=p._summary||'';
 
-  // Summary with left bar
-  const qY=cY+esz+52;const qX=M+20;
-  const barH=Math.min(160, 44*Math.ceil(summary.length/60)+20);
-  ctx.fillStyle='#1a6bff';ctx.fillRect(M,qY-32,5,barH);
-  ctx.font='italic 30px Georgia,serif';ctx.fillStyle='#0c2e52';
-  const qText = summary.length>200 ? summary.slice(0,197)+'...' : summary;
-  ctxWrapText(ctx,qText,qX,qY,W-M-qX,44);
+  // Estimate content height to vertically center
+  let esz=38;ctx.font='500 '+esz+'px Georgia,serif';
+  while(ctx.measureText(entity).width>W-2*M&&esz>20){esz--;ctx.font='500 '+esz+'px Georgia,serif';}
+  const summaryLines=Math.ceil((summary.length*18)/(W-2*M-24))||2;
+  const contentH=22+14+esz+19+summaryLines*38+(isExcluded?50:0);
+  const startY=centerTop+Math.max(0,(centerBot-centerTop-contentH)/2);
+  let y=startY;
 
-  drawScoreRow(ctx,score,'Alignment score');
-  drawFooterLight(ctx);
+  // SERVES label
+  ctx.font='19px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('SERVES',M,y+19);y+=19+14;
+
+  // Entity name
+  ctx.font='500 '+esz+'px Georgia,serif';ctx.fillStyle='#0c447c';ctx.fillText(entity,M,y+esz);y+=esz+19;
+
+  // Summary with dynamic left bar
+  if(summary){
+    const qX=M+16;const maxW=W-M-qX;
+    ctx.font='italic 30px Georgia,serif';ctx.fillStyle='#0c2e52';
+    const words=summary.split(' ');let line='';const lines=[];
+    for(const w of words){const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}
+    if(line)lines.push(line);
+    const lineH=38;const totalBarH=lines.length*lineH;
+    ctx.fillStyle='#1a6bff';ctx.fillRect(M,y,5,totalBarH);
+    lines.forEach(function(l,i){ctx.fillStyle='#0c2e52';ctx.fillText(l,qX,y+lineH*(i+1)-8);});
+    y+=totalBarH+16;
+  }
+
+  // Exclusion note
+  if(isExcluded){
+    ctx.font='16px Arial,sans-serif';ctx.fillStyle='#4a7fd4';
+    ctx.fillText('This post was evaluated but does not fit within the identified cluster.',M,y+16);
+  }
+
+  // Score row anchored at bottom — divider, then score, then footer
+  const footerY=H-M;
+  const scoreY=footerY-28-18;
+  const dividerY=scoreY-54-12;
+  ctx.strokeStyle='rgba(26,107,255,0.18)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(M,dividerY);ctx.lineTo(W-M,dividerY);ctx.stroke();
+  ctx.font='500 54px Arial,sans-serif';ctx.fillStyle='#1a6bff';
+  ctx.fillText(Math.round(p.overallScore||0)+'%',M,scoreY);
+  ctx.font='18px Arial,sans-serif';ctx.fillStyle='#4a7fd4';
+  ctx.textAlign='right';ctx.fillText('ALIGNMENT SCORE',W-M,scoreY);ctx.textAlign='left';
+  ctx.font='18px Consolas,monospace';ctx.fillStyle='rgba(12,68,124,0.4)';
+  ctx.fillText('whosbehindthat.com',M,footerY);
   return canvas;
 }
 
@@ -3364,95 +3406,105 @@ function drawClusterSlide(c, posts, date) {
   makeLightBg(ctx);
   ctx.textBaseline='alphabetic';ctx.textAlign='left';
 
-  // Metadata — tighter line height
-  const clDate = c.ts ? new Date(c.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) : date;
-  const postIds = (c.postIds||[]).map(function(_,i){return 'P'+(i+1);}).join(', ');
+  // Metadata
+  const clDate=c.ts?new Date(c.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}):date;
+  const postIds=(c.postIds||[]).map(function(_,i){return 'P'+(i+1);}).join(', ');
   const meta=[['Cluster',c.id||''],['Posts',postIds],['Detected',clDate]];
   let my=M+32;
   meta.forEach(function(kv){
-    ctx.font='26px Consolas,monospace';ctx.fillStyle='#4a7fd4';ctx.fillText(kv[0]+':  ',M,my);
+    ctx.font='17px Consolas,monospace';ctx.fillStyle='#4a7fd4';ctx.fillText(kv[0]+':  ',M,my);
     const lw=ctx.measureText(kv[0]+':  ').width;
-    ctx.fillStyle='#0c447c';ctx.font='600 26px Consolas,monospace';ctx.fillText(kv[1],M+lw,my);
-    my+=34;
+    ctx.fillStyle='#0c447c';ctx.font='500 17px Consolas,monospace';ctx.fillText(kv[1],M+lw,my);
+    my+=30;
   });
 
-  let y=my+40;
+  let y=my+32;
 
   // Connection type
-  ctx.font='20px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('CONNECTION TYPE',M,y+20);y+=52;
-  let csz=48;ctx.font='500 '+csz+'px Georgia,serif';
-  while(ctx.measureText(c.connectionType||'').width>W-2*M&&csz>24){csz--;ctx.font='500 '+csz+'px Georgia,serif';}
-  ctx.fillStyle='#0c447c';ctx.fillText(c.connectionType||'Narrative reinforcement',M,y);y+=csz+8;
+  ctx.font='19px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('CONNECTION TYPE',M,y+19);y+=19+12;
+  let csz=34;ctx.font='500 '+csz+'px Georgia,serif';
+  while(ctx.measureText(c.connectionType||'').width>W-2*M&&csz>20){csz--;ctx.font='500 '+csz+'px Georgia,serif';}
+  ctx.fillStyle='#0c447c';ctx.fillText(c.connectionType||'Narrative reinforcement',M,y+csz);y+=csz+10;
 
-  // Nodes
-  const includedIds = new Set(c.postIds||[]);
-  const nR=36;
-  const nW=W-2*M;
+  // Nodes edge-to-edge
+  const includedIds=new Set(c.postIds||[]);
+  const nR=33;const nW=W-2*M;
   const connGap=(nW-posts.length*nR*2)/(posts.length-1||1);
-  const nCY=y+nR+8;
+  const nCY=y+nR+6;
   posts.forEach(function(p,i){
     const nx=M+nR+i*(nR*2+connGap);
     const included=includedIds.has(p.scanId);
     if(i>0){
-      const prevIncluded=includedIds.has(posts[i-1].scanId);
-      ctx.strokeStyle=(included&&prevIncluded)?'#1a6bff':'rgba(12,68,124,0.2)';
+      ctx.strokeStyle=(included&&includedIds.has(posts[i-1].scanId))?'#1a6bff':'rgba(12,68,124,0.2)';
       ctx.lineWidth=3;ctx.setLineDash([8,6]);
-      const px=M+nR+(i-1)*(nR*2+connGap)+nR;
-      ctx.beginPath();ctx.moveTo(px,nCY);ctx.lineTo(nx-nR,nCY);ctx.stroke();ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(M+nR+(i-1)*(nR*2+connGap)+nR,nCY);ctx.lineTo(nx-nR,nCY);ctx.stroke();ctx.setLineDash([]);
     }
     ctx.beginPath();ctx.arc(nx,nCY,nR,0,Math.PI*2);
     ctx.fillStyle=included?'#1a6bff':'rgba(12,68,124,0.12)';ctx.fill();
     if(!included){ctx.strokeStyle='rgba(12,68,124,0.3)';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);}
-    ctx.font='500 24px Arial,sans-serif';ctx.fillStyle=included?'#fff':'#4a7fd4';
+    ctx.font='500 22px Arial,sans-serif';ctx.fillStyle=included?'#fff':'#4a7fd4';
     ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('P'+(i+1),nx,nCY);
     ctx.textAlign='left';ctx.textBaseline='alphabetic';
   });
-  y=nCY+nR+16;
+  y=nCY+nR+14;
 
-  // Legend
+  // Legend with dividers
   ctx.strokeStyle='rgba(26,107,255,0.18)';ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();y+=10;
+  ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();y+=8;
   posts.forEach(function(p,i){
-    y+=36;
+    y+=34;
     const included=includedIds.has(p.scanId);
     const entity=(p.topMatches&&p.topMatches[0])?p.topMatches[0]:(p.overallLabel||'Unknown');
-    const summary=(p._summary||'').slice(0,70);
-    ctx.font='20px Consolas,monospace';ctx.fillStyle='rgba(26,107,255,0.5)';ctx.fillText('P'+(i+1),M,y);
-    const idW=ctx.measureText('P'+(i+1)+'  ').width;
-    ctx.font='500 20px Georgia,serif';ctx.fillStyle=included?'#0c447c':'#4a7fd4';ctx.fillText(entity,M+idW,y);
+    const summary=(p._summary||'').slice(0,72);
+    ctx.font='17px Consolas,monospace';ctx.fillStyle='rgba(26,107,255,0.5)';ctx.fillText('P'+(i+1),M,y);
+    const idW=ctx.measureText('P'+(i+1)+'   ').width;
+    ctx.font='500 17px Georgia,serif';ctx.fillStyle=included?'#0c447c':'#4a7fd4';ctx.fillText(entity,M+idW,y);
     if(!included){
       const entW=ctx.measureText(entity).width;
-      ctx.font='19px Arial,sans-serif';ctx.fillStyle='rgba(12,68,124,0.4)';
-      ctx.fillText('  · No narrative connection detected',M+idW+entW,y);
+      ctx.font='17px Arial,sans-serif';ctx.fillStyle='rgba(12,68,124,0.4)';
+      ctx.fillText('  ·  No narrative connection detected',M+idW+entW,y);
     } else if(summary){
-      y+=26;
-      ctx.font='italic 19px Arial,sans-serif';ctx.fillStyle='#0c2e52';ctx.fillText(summary,M+idW,y);
+      y+=24;ctx.font='italic 17px Arial,sans-serif';ctx.fillStyle='#0c2e52';ctx.fillText(summary,M+idW,y);
     }
   });
-  y+=16;
-  ctx.strokeStyle='rgba(26,107,255,0.18)';ctx.lineWidth=1.5;
+  y+=12;
   ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();y+=14;
 
-  // Serves
-  ctx.font='20px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('SERVES',M,y+18);y+=50;
-  let ssz=40;const servesTxt=c.dominantEntity||'';
+  // SERVES + entity + analysis with left bar
+  ctx.font='19px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('SERVES',M,y+19);y+=19+19;
+  let ssz=28;const servesTxt=c.dominantEntity||'';
   ctx.font='500 '+ssz+'px Georgia,serif';
-  while(ctx.measureText(servesTxt).width>W-2*M&&ssz>24){ssz--;ctx.font='500 '+ssz+'px Georgia,serif';}
-  ctx.fillStyle='#0c447c';ctx.fillText(servesTxt,M,y);
+  while(ctx.measureText(servesTxt).width>W-2*M&&ssz>16){ssz--;ctx.font='500 '+ssz+'px Georgia,serif';}
+  ctx.fillStyle='#0c447c';ctx.fillText(servesTxt,M,y+ssz);y+=ssz+28;
 
-  // Score + divider anchored at bottom — divider just above 84%
+  // Analysis/synopsis with left bar
+  const analysis=c.synopsis||'';
+  if(analysis){
+    const qX=M+16;const maxW=W-M-qX;
+    ctx.font='italic 25px Georgia,serif';ctx.fillStyle='#0c2e52';
+    const words=analysis.split(' ');let line='';const lines=[];
+    for(const w of words){const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}
+    if(line)lines.push(line);
+    const maxLines=3;const displayLines=lines.slice(0,maxLines);
+    if(lines.length>maxLines)displayLines[maxLines-1]=displayLines[maxLines-1]+'...';
+    const lineH=34;const barH=displayLines.length*lineH;
+    ctx.fillStyle='#1a6bff';ctx.fillRect(M,y,5,barH);
+    displayLines.forEach(function(l,i){ctx.fillStyle='#0c2e52';ctx.fillText(l,qX,y+lineH*(i+1)-8);});
+  }
+
+  // Score + footer anchored at bottom
+  const footerY=H-M;
+  const scoreY=footerY-28-18;
+  const dividerY=scoreY-54-12;
   const confidence=Math.round(c.coherenceScore||c.confidence||0)||84;
-  const scoreY=H-M-10;
-  const dividerY=scoreY-42;
   ctx.strokeStyle='rgba(26,107,255,0.18)';ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(M,dividerY);ctx.lineTo(W-M,dividerY);ctx.stroke();
-  ctx.font='500 40px Arial,sans-serif';ctx.fillStyle='#1a6bff';
-  ctx.textBaseline='alphabetic';ctx.fillText(confidence+'%',M,scoreY);
-  ctx.font='20px Arial,sans-serif';ctx.fillStyle='#4a7fd4';
-  ctx.textAlign='right';ctx.fillText('COORDINATION CONFIDENCE',W-M,scoreY);
-  ctx.textAlign='left';
-
-  drawFooterLight(ctx);
+  ctx.font='500 54px Arial,sans-serif';ctx.fillStyle='#1a6bff';
+  ctx.fillText(confidence+'%',M,scoreY);
+  ctx.font='18px Arial,sans-serif';ctx.fillStyle='#4a7fd4';
+  ctx.textAlign='right';ctx.fillText('COORDINATION CONFIDENCE',W-M,scoreY);ctx.textAlign='left';
+  ctx.font='18px Consolas,monospace';ctx.fillStyle='rgba(12,68,124,0.4)';
+  ctx.fillText('whosbehindthat.com',M,footerY);
   return canvas;
 }
 
@@ -3463,25 +3515,36 @@ function drawSummarySlide() {
   const M=SLIDE_M,W=SLIDE_W,H=SLIDE_W;
   makeDarkBg(ctx);
   ctx.textBaseline='alphabetic';ctx.textAlign='left';
-  ctx.font='26px Arial,sans-serif';ctx.fillStyle='rgba(200,215,240,0.5)';
-  ctx.fillText("WHO'S BEHIND THAT?",M,M+28);
-  const titleSz=64, urlSz=48, noteSz=30;
-  const titleH=titleSz*1.35*2, urlH=urlSz+16, noteH=noteSz+12;
-  const startY=(H-(titleH+urlH+noteH))/2+titleSz;
+
+  // Wordmark top-left
+  ctx.font='20px Arial,sans-serif';ctx.fillStyle='rgba(200,215,240,0.55)';
+  ctx.fillText("WHO'S BEHIND THAT?",M,M+22);
+
+  // Center group: title (one line) + url (no gap) + note
   const titlePart1="See who's really ";
   const titlePart2='behind the story.';
   const titleFull=titlePart1+titlePart2;
-  let tSz=titleSz;
-  ctx.font='500 '+tSz+'px Georgia,serif';
-  while(ctx.measureText(titleFull).width>W-2*M&&tSz>30){tSz--;ctx.font='500 '+tSz+'px Georgia,serif';}
+  let tSz=44;ctx.font='500 '+tSz+'px Georgia,serif';
+  while(ctx.measureText(titleFull).width>W-2*M&&tSz>24){tSz--;ctx.font='500 '+tSz+'px Georgia,serif';}
+  const urlSz=Math.round(tSz*0.85); // slightly smaller than title
+  const noteSz=25;
+  const groupH=tSz+urlSz+noteSz+25;
+  const startY=H/2-groupH/2+tSz;
+
   const tp1w=ctx.measureText(titlePart1).width;
   ctx.fillStyle='#ffffff';ctx.fillText(titlePart1,M,startY);
   ctx.fillStyle='#4d8fff';ctx.fillText(titlePart2,M+tp1w,startY);
+
+  // URL immediately under title, no gap
   ctx.font=urlSz+'px Arial,sans-serif';ctx.fillStyle='#9dc2ff';
-  ctx.fillText('whosbehindthat.com',M,startY+titleH+10);
-  ctx.font=noteSz+'px Arial,sans-serif';ctx.fillStyle='rgba(200,215,240,0.6)';
-  ctx.fillText('Free · Anonymous · No signup required',M,startY+titleH+urlSz+noteSz+16);
-  ctx.font='26px Arial,sans-serif';ctx.fillStyle='rgba(200,215,240,0.4)';
+  ctx.fillText('whosbehindthat.com',M,startY+tSz+urlSz);
+
+  // Note
+  ctx.font=noteSz+'px Arial,sans-serif';ctx.fillStyle='rgba(200,215,240,0.65)';
+  ctx.fillText('Free · Anonymous · No signup required',M,startY+tSz+urlSz+25+noteSz);
+
+  // Enquiries bottom-left
+  ctx.font='19px Arial,sans-serif';ctx.fillStyle='rgba(200,215,240,0.45)';
   ctx.fillText('for enquiries: contact@whosbehindthat.com',M,H-M);
   return canvas;
 }

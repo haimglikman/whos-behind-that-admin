@@ -1,5 +1,18 @@
 ## Changelog
 
+### v2.17.9 (admin) | Server: v1.22.7 | Client: v1.17.3
+- All 4 carousel slides rebuilt to match updated spec:
+  - Hook: title+tag vertically centered as a group
+  - Post: metadata at 17px mono, score row 54px anchored at bottom, dynamic bar height, exclusion note for excluded posts
+  - Cluster: 17px mono metadata, synopsis with left bar below SERVES, score 54px matching post slide, footer never overlapping score
+  - Summary: title on one line, URL immediately below with no gap, URL slightly smaller than title
+- Post slides: excluded posts now show exclusion note
+
+### v2.17.8 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
+- Marketing tab: generated carousels now persisted in localStorage — survive tab switches and page reloads
+- Marketing tab: shows cluster ID, cluster date, generation date, slide count per entry
+- Marketing tab: Remove button per entry, Regenerate button re-downloads the ZIP
+
 ### v2.17.7 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
 - Cluster slide: tighter metadata line height, smaller gap to content block
 - Cluster slide: smaller gap between connection type and timeline nodes

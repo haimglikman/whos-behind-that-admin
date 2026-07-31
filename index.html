@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.17.9</div>
+      <div class="version-badge" id="version-badge">v2.17.10</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1463,7 +1463,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.17.9';
+const APP_VERSION = '2.17.10';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -3406,7 +3406,12 @@ function drawClusterSlide(c, posts, date) {
   makeLightBg(ctx);
   ctx.textBaseline='alphabetic';ctx.textAlign='left';
 
-  // Metadata
+  // Fixed bottom area: score row + footer
+  const footerY=H-M;
+  const scoreY=footerY-28-18;
+  const dividerY=scoreY-54-12;
+
+  // Metadata top
   const clDate=c.ts?new Date(c.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}):date;
   const postIds=(c.postIds||[]).map(function(_,i){return 'P'+(i+1);}).join(', ');
   const meta=[['Cluster',c.id||''],['Posts',postIds],['Detected',clDate]];
@@ -3418,7 +3423,60 @@ function drawClusterSlide(c, posts, date) {
     my+=30;
   });
 
-  let y=my+32;
+  // Available vertical space for content
+  const contentTop=my+24;
+  const contentBot=dividerY-12;
+  const availH=contentBot-contentTop;
+
+  // Helper: wrap text at given font, return lines array
+  function wrapAt(text, font, maxW) {
+    ctx.font=font;
+    const words=text.split(' ');let line='';const lines=[];
+    for(const w of words){const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}
+    if(line)lines.push(line);
+    return lines;
+  }
+
+  // Fitting strategy: try legend row heights from 34 down to 22, analysis font from 25 down to 11
+  const analysis=c.synopsis||'';
+  const includedIds=new Set(c.postIds||[]);
+
+  function measureLayout(legendRowH, analysisFsz, sectionGap) {
+    // Connection type label + title
+    let h=19+12; // label
+    let csz=34;ctx.font='500 '+csz+'px Georgia,serif';
+    while(ctx.measureText(c.connectionType||'').width>W-2*M&&csz>20){csz--;ctx.font='500 '+csz+'px Georgia,serif';}
+    h+=csz+10;
+    // Nodes
+    const nR=33;h+=nR*2+6+14;
+    // Legend
+    h+=8; // top divider padding
+    posts.forEach(function(p){
+      h+=legendRowH;
+      const included=includedIds.has(p.scanId);
+      const summary=(p._summary||'').slice(0,72);
+      if(included&&summary) h+=Math.round(legendRowH*0.7);
+    });
+    h+=12+14; // bottom divider
+    // Serves label + name
+    h+=19+19+28+sectionGap;
+    // Analysis
+    if(analysis){
+      const lines=wrapAt(analysis,'italic '+analysisFsz+'px Georgia,serif',W-2*M-20);
+      h+=lines.length*(analysisFsz*1.35)+8;
+    }
+    return h;
+  }
+
+  // Find fitting params
+  let legendRowH=34,analysisFsz=25,sectionGap=28;
+  // Step 1: tighten spacing
+  while(measureLayout(legendRowH,analysisFsz,sectionGap)>availH&&legendRowH>22){legendRowH-=1;sectionGap=Math.max(10,sectionGap-1);}
+  // Step 2: shrink analysis font
+  while(measureLayout(legendRowH,analysisFsz,sectionGap)>availH&&analysisFsz>11){analysisFsz-=1;}
+
+  // Now render
+  let y=contentTop;
 
   // Connection type
   ctx.font='19px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('CONNECTION TYPE',M,y+19);y+=19+12;
@@ -3427,7 +3485,6 @@ function drawClusterSlide(c, posts, date) {
   ctx.fillStyle='#0c447c';ctx.fillText(c.connectionType||'Narrative reinforcement',M,y+csz);y+=csz+10;
 
   // Nodes edge-to-edge
-  const includedIds=new Set(c.postIds||[]);
   const nR=33;const nW=W-2*M;
   const connGap=(nW-posts.length*nR*2)/(posts.length-1||1);
   const nCY=y+nR+6;
@@ -3448,57 +3505,53 @@ function drawClusterSlide(c, posts, date) {
   });
   y=nCY+nR+14;
 
-  // Legend with dividers
+  // Legend
   ctx.strokeStyle='rgba(26,107,255,0.18)';ctx.lineWidth=1.5;
   ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();y+=8;
+  const legendFsz=Math.max(12,legendRowH-17);
   posts.forEach(function(p,i){
-    y+=34;
+    y+=legendRowH;
     const included=includedIds.has(p.scanId);
     const entity=(p.topMatches&&p.topMatches[0])?p.topMatches[0]:(p.overallLabel||'Unknown');
     const summary=(p._summary||'').slice(0,72);
-    ctx.font='17px Consolas,monospace';ctx.fillStyle='rgba(26,107,255,0.5)';ctx.fillText('P'+(i+1),M,y);
+    ctx.font=legendFsz+'px Consolas,monospace';ctx.fillStyle='rgba(26,107,255,0.5)';ctx.fillText('P'+(i+1),M,y);
     const idW=ctx.measureText('P'+(i+1)+'   ').width;
-    ctx.font='500 17px Georgia,serif';ctx.fillStyle=included?'#0c447c':'#4a7fd4';ctx.fillText(entity,M+idW,y);
+    ctx.font='500 '+legendFsz+'px Georgia,serif';ctx.fillStyle=included?'#0c447c':'#4a7fd4';ctx.fillText(entity,M+idW,y);
     if(!included){
       const entW=ctx.measureText(entity).width;
-      ctx.font='17px Arial,sans-serif';ctx.fillStyle='rgba(12,68,124,0.4)';
+      ctx.font=legendFsz+'px Arial,sans-serif';ctx.fillStyle='rgba(12,68,124,0.4)';
       ctx.fillText('  ·  No narrative connection detected',M+idW+entW,y);
     } else if(summary){
-      y+=24;ctx.font='italic 17px Arial,sans-serif';ctx.fillStyle='#0c2e52';ctx.fillText(summary,M+idW,y);
+      y+=Math.round(legendRowH*0.7);
+      ctx.font='italic '+legendFsz+'px Arial,sans-serif';ctx.fillStyle='#0c2e52';ctx.fillText(summary,M+idW,y);
     }
   });
   y+=12;
   ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();y+=14;
 
-  // SERVES + entity + analysis with left bar
+  // SERVES label + name
   ctx.font='19px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('SERVES',M,y+19);y+=19+19;
   let ssz=28;const servesTxt=c.dominantEntity||'';
   ctx.font='500 '+ssz+'px Georgia,serif';
   while(ctx.measureText(servesTxt).width>W-2*M&&ssz>16){ssz--;ctx.font='500 '+ssz+'px Georgia,serif';}
-  ctx.fillStyle='#0c447c';ctx.fillText(servesTxt,M,y+ssz);y+=ssz+28;
+  ctx.fillStyle='#0c447c';ctx.fillText(servesTxt,M,y+ssz);y+=ssz+sectionGap;
 
-  // Analysis/synopsis with left bar
-  const analysis=c.synopsis||'';
+  // Analysis with dynamic left bar — full text, never truncated
   if(analysis){
     const qX=M+16;const maxW=W-M-qX;
-    ctx.font='italic 25px Georgia,serif';ctx.fillStyle='#0c2e52';
-    const words=analysis.split(' ');let line='';const lines=[];
-    for(const w of words){const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}
-    if(line)lines.push(line);
-    const maxLines=3;const displayLines=lines.slice(0,maxLines);
-    if(lines.length>maxLines)displayLines[maxLines-1]=displayLines[maxLines-1]+'...';
-    const lineH=34;const barH=displayLines.length*lineH;
+    const font='italic '+analysisFsz+'px Georgia,serif';
+    const lines=wrapAt(analysis,font,maxW);
+    const lineH=Math.round(analysisFsz*1.35);
+    const barH=lines.length*lineH;
     ctx.fillStyle='#1a6bff';ctx.fillRect(M,y,5,barH);
-    displayLines.forEach(function(l,i){ctx.fillStyle='#0c2e52';ctx.fillText(l,qX,y+lineH*(i+1)-8);});
+    ctx.font=font;ctx.fillStyle='#0c2e52';
+    lines.forEach(function(l,i){ctx.fillText(l,qX,y+lineH*(i+1)-6);});
   }
 
-  // Score + footer anchored at bottom
-  const footerY=H-M;
-  const scoreY=footerY-28-18;
-  const dividerY=scoreY-54-12;
-  const confidence=Math.round(c.coherenceScore||c.confidence||0)||84;
+  // Score row + footer anchored at bottom
   ctx.strokeStyle='rgba(26,107,255,0.18)';ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(M,dividerY);ctx.lineTo(W-M,dividerY);ctx.stroke();
+  const confidence=Math.round(c.coherenceScore||c.confidence||0)||84;
   ctx.font='500 54px Arial,sans-serif';ctx.fillStyle='#1a6bff';
   ctx.fillText(confidence+'%',M,scoreY);
   ctx.font='18px Arial,sans-serif';ctx.fillStyle='#4a7fd4';
@@ -3520,14 +3573,13 @@ function drawSummarySlide() {
   ctx.font='20px Arial,sans-serif';ctx.fillStyle='rgba(200,215,240,0.55)';
   ctx.fillText("WHO'S BEHIND THAT?",M,M+22);
 
-  // Center group: title (one line) + url (no gap) + note
+  // Center group: title on one line + url (42px, no gap) + note (25px, 25px gap)
   const titlePart1="See who's really ";
   const titlePart2='behind the story.';
   const titleFull=titlePart1+titlePart2;
   let tSz=44;ctx.font='500 '+tSz+'px Georgia,serif';
   while(ctx.measureText(titleFull).width>W-2*M&&tSz>24){tSz--;ctx.font='500 '+tSz+'px Georgia,serif';}
-  const urlSz=Math.round(tSz*0.85); // slightly smaller than title
-  const noteSz=25;
+  const urlSz=42;const noteSz=25;
   const groupH=tSz+urlSz+noteSz+25;
   const startY=H/2-groupH/2+tSz;
 
@@ -3535,13 +3587,20 @@ function drawSummarySlide() {
   ctx.fillStyle='#ffffff';ctx.fillText(titlePart1,M,startY);
   ctx.fillStyle='#4d8fff';ctx.fillText(titlePart2,M+tp1w,startY);
 
-  // URL immediately under title, no gap
+  // URL — 42px, immediately under title, no gap, wide letter spacing via spacing trick
   ctx.font=urlSz+'px Arial,sans-serif';ctx.fillStyle='#9dc2ff';
-  ctx.fillText('whosbehindthat.com',M,startY+tSz+urlSz);
+  // Simulate wide letter spacing by drawing char by char
+  const urlText='whosbehindthat.com';
+  const urlY=startY+tSz+urlSz;
+  let ux=M;
+  for(let i=0;i<urlText.length;i++){
+    ctx.fillText(urlText[i],ux,urlY);
+    ux+=ctx.measureText(urlText[i]).width+3; // +3px letter spacing
+  }
 
   // Note
   ctx.font=noteSz+'px Arial,sans-serif';ctx.fillStyle='rgba(200,215,240,0.65)';
-  ctx.fillText('Free · Anonymous · No signup required',M,startY+tSz+urlSz+25+noteSz);
+  ctx.fillText('Free · Anonymous · No signup required',M,urlY+25+noteSz);
 
   // Enquiries bottom-left
   ctx.font='19px Arial,sans-serif';ctx.fillStyle='rgba(200,215,240,0.45)';

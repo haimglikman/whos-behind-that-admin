@@ -1,5 +1,10 @@
 ## Changelog
 
+### v2.17.10 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.3
+- Cluster slide: full fitting strategy — tightens legend row spacing first, then shrinks analysis font (down to 11px) — full analysis text always visible, never truncated
+- Cluster slide: dynamic bar height matching full rendered text
+- Summary slide: URL 42px with wide letter spacing, title auto-fits to single line
+
 ### v2.17.9 (admin) | Server: v1.22.7 | Client: v1.17.3
 - All 4 carousel slides rebuilt to match updated spec:
   - Hook: title+tag vertically centered as a group

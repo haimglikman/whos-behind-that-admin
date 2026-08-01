@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.17.10</div>
+      <div class="version-badge" id="version-badge">v2.17.11</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -267,12 +267,12 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
       <span class="nav-counter" id="history-count">0</span>
     </button>
     <button class="nav-item" id="nav-investigate" onclick="showPage('investigate',this)">
-      <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><circle cx="5" cy="7.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="10" cy="4" r="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="10" cy="11" r="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="6.4" y1="6.7" x2="8.7" y2="4.8" stroke="currentColor" stroke-width="1.2"/><line x1="6.4" y1="8.3" x2="8.7" y2="10.2" stroke="currentColor" stroke-width="1.2"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><line x1="12" y1="4" x2="12" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="4" y1="12" x2="7" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="17" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
       Investigate
       <span class="nav-counter" id="investigate-count" style="background:var(--blue);color:#fff">0</span>
     </button>
     <button class="nav-item" id="nav-clusters" onclick="showPage('clusters',this)">
-      <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><circle cx="3.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.2"/><circle cx="11.5" cy="3.5" r="2" stroke="currentColor" stroke-width="1.2"/><circle cx="11.5" cy="11.5" r="2" stroke="currentColor" stroke-width="1.2"/><line x1="5.4" y1="6.5" x2="9.6" y2="4.4" stroke="currentColor" stroke-width="1.1"/><line x1="5.4" y1="8.5" x2="9.6" y2="10.6" stroke="currentColor" stroke-width="1.1"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="12" r="5.5" stroke="currentColor" stroke-width="1.8"/><circle cx="16" cy="12" r="5.5" stroke="currentColor" stroke-width="1.8"/></svg>
       Clusters history
     </button>
     <button class="nav-item" id="nav-database" onclick="showPage('database',this)">
@@ -1463,7 +1463,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.17.10';
+const APP_VERSION = '2.17.11';
 
 // ─────────────────────────────────────────────
 // STORAGE

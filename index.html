@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.17.12</div>
+      <div class="version-badge" id="version-badge">v2.18.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1463,7 +1463,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.17.12';
+const APP_VERSION = '2.18.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -2790,7 +2790,7 @@ async function analyzeWithManualText() {
     advance(3); await delay(300); advance(4); await delay(300); advance(5); await delay(200);
     const result = buildResult(analysis, {text: postText}, entities);
     const srvVer = await fetchSrvVersion(serverUrl);
-    const entry = await saveToHistory(url, postText, result, srvVer).catch(function(e){ console.warn('History save error:', e.message); return null; });
+    const entry = await saveToHistory(url, postText, result, srvVer, undefined, undefined, {ogTitle: null, ogImage: null, author: null}).catch(function(e){ console.warn('History save error:', e.message); return null; });
     result.scanId = entry ? entry.scanId : '';
     showResults(url, result);
     recordScan();
@@ -2822,7 +2822,7 @@ async function performServerAnalysis(url, serverUrl) {
   const finalUrl = data.url || url;
   const result = buildResult(data.analysis, data.post, entities);
   const srvVer = await fetchSrvVersion(serverUrl);
-  const entry = await saveToHistory(finalUrl, (data.post && data.post.text) || '', result, srvVer, data.inputTokens, data.outputTokens).catch(function(e){ console.warn('History save error:', e.message); return null; });
+  const entry = await saveToHistory(finalUrl, (data.post && data.post.text) || '', result, srvVer, data.inputTokens, data.outputTokens, data.post).catch(function(e){ console.warn('History save error:', e.message); return null; });
   result.scanId = entry ? entry.scanId : '';
   showResults(finalUrl, result);
   recordScan();
@@ -3212,10 +3212,17 @@ async function generateCarousel(clusterId) {
 
   const canvases = [];
   canvases.push(drawHookSlide(date, clusterName));
-  enrichedPosts.forEach(function(p) {
+  for (const p of enrichedPosts) {
     const isExcluded = !includedIds.has(p.scanId);
-    canvases.push(drawPostSlide(p, date, isExcluded));
-  });
+    // Pull ogTitle/ogImage/author from cluster's stored history entry if available
+    const histEntry = getHistory().find(function(h){ return h.scanId === p.scanId; });
+    const postWithMeta = Object.assign({}, p, {
+      ogTitle: (histEntry && histEntry.ogTitle) || p.ogTitle || null,
+      ogImage: (histEntry && histEntry.ogImage) || p.ogImage || null,
+      author: (histEntry && histEntry.author) || p.author || null
+    });
+    canvases.push(await drawPostSlide(postWithMeta, date, isExcluded));
+  }
   canvases.push(drawClusterSlide(c, enrichedPosts, date));
   canvases.push(drawSummarySlide());
 
@@ -3321,7 +3328,7 @@ function drawHookSlide(date, clusterName) {
   return canvas;
 }
 
-function drawPostSlide(p, date, isExcluded) {
+async function drawPostSlide(p, date, isExcluded) {
   const canvas = document.createElement('canvas');
   canvas.width = SLIDE_W; canvas.height = SLIDE_W;
   const ctx = canvas.getContext('2d');
@@ -3329,11 +3336,32 @@ function drawPostSlide(p, date, isExcluded) {
   makeLightBg(ctx);
   ctx.textBaseline='alphabetic';ctx.textAlign='left';
 
-  // Metadata top-left
   const platform = p.source || p.platform || 'Unknown';
   const url = p.url || '';
   const pubDate = p.ts ? new Date(p.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) : date;
   const postId = p.scanId || '';
+  const domain = url ? url.replace(/^https?:\/\//,'').split('/')[0] : '';
+  const author = p.author || null;
+  const ogTitle = p.ogTitle || null;
+  const ogImage = p.ogImage || null;
+
+  // Helper: load image with timeout
+  function loadImg(src) {
+    return new Promise(function(resolve) {
+      if (!src) return resolve(null);
+      const img = new Image(); img.crossOrigin='anonymous';
+      const t = setTimeout(function(){ resolve(null); }, 4000);
+      img.onload = function(){ clearTimeout(t); resolve(img); };
+      img.onerror = function(){ clearTimeout(t); resolve(null); };
+      img.src = src;
+    });
+  }
+
+  // Load favicon and OG image in parallel
+  const faviconUrl = domain ? 'https://www.google.com/s2/favicons?domain='+domain+'&sz=64' : null;
+  const [favicon, ogImg] = await Promise.all([loadImg(faviconUrl), loadImg(ogImage)]);
+
+  // ── Metadata ──
   const meta=[['ID',postId],['Platform',platform],['URL',url.replace(/^https?:\/\//,'').slice(0,42)+(url.replace(/^https?:\/\//,'').length>42?'...':'')],['Published',pubDate]];
   let my=M+28;
   meta.forEach(function(kv){
@@ -3343,50 +3371,93 @@ function drawPostSlide(p, date, isExcluded) {
     my+=30;
   });
 
-  // Center group — vertically centered in remaining space above score row
-  const scoreAreaH=54+28+18+12; // score+footer+padding
-  const centerTop=my+20;
-  const centerBot=H-scoreAreaH-40;
+  // ── Headline (RTL-aware) ──
+  const headline = ogTitle || '';
+  const isRTL = /[\u0590-\u05FF\u0600-\u06FF]/.test(headline);
+  let hlEndY = my+8;
+  if (headline) {
+    const hlFont = '500 28px Georgia,serif';
+    const hlMaxW = W-2*M;
+    if (isRTL) {
+      const off=document.createElement('canvas');off.width=W;off.height=200;
+      const octx=off.getContext('2d');octx.direction='rtl';octx.font=hlFont;
+      octx.fillStyle='#0c447c';octx.textBaseline='alphabetic';
+      const words=('\u200F'+headline).split(' ');let line='';const lines=[];
+      for(const w of words){const t=line?line+' '+w:w;if(octx.measureText(t).width>hlMaxW&&line){lines.push(line);line=w;}else line=t;}
+      if(line)lines.push(line);
+      lines.forEach(function(l,i){octx.fillText(l,W-M,32+i*38);});
+      ctx.drawImage(off,0,hlEndY-4);
+      hlEndY+=lines.length*38+4;
+    } else {
+      ctx.font=hlFont;ctx.fillStyle='#0c447c';
+      const words=headline.split(' ');let line='';const lines=[];
+      for(const w of words){const t=line?line+' '+w:w;if(ctx.measureText(t).width>hlMaxW&&line){lines.push(line);line=w;}else line=t;}
+      if(line)lines.push(line);
+      lines.forEach(function(l,i){ctx.fillText(l,M,hlEndY+8+i*38);});
+      hlEndY+=lines.length*38+4;
+    }
+  }
+
+  // ── Source row: favicon + platform name + author ──
+  const srcY=hlEndY+12;const iconSize=32;
+  if (favicon) {
+    ctx.save();ctx.beginPath();ctx.arc(M+iconSize/2,srcY+iconSize/2,iconSize/2,0,Math.PI*2);ctx.clip();
+    ctx.drawImage(favicon,M,srcY,iconSize,iconSize);ctx.restore();
+  } else {
+    ctx.beginPath();ctx.arc(M+iconSize/2,srcY+iconSize/2,iconSize/2,0,Math.PI*2);
+    ctx.fillStyle='rgba(26,107,255,0.15)';ctx.fill();
+    ctx.font='500 13px Arial,sans-serif';ctx.fillStyle='#185fa5';ctx.textAlign='center';
+    ctx.fillText((domain||'?')[0].toUpperCase(),M+iconSize/2,srcY+iconSize/2+5);ctx.textAlign='left';
+  }
+  ctx.font='500 15px Arial,sans-serif';ctx.fillStyle='#185fa5';
+  ctx.fillText(domain||platform,M+iconSize+10,srcY+iconSize/2+5);
+  if (author) {
+    const dw=ctx.measureText(domain||platform).width;
+    ctx.font='15px Arial,sans-serif';ctx.fillStyle='#4a7fd4';
+    ctx.fillText(' · '+author,M+iconSize+10+dw,srcY+iconSize/2+5);
+  }
+
+  // ── OG image thumbnail ──
+  const thumbY=srcY+iconSize+16;const thumbH=260;const thumbW=W-2*M;
+  if (ogImg) {
+    ctx.save();ctx.beginPath();ctx.roundRect(M,thumbY,thumbW,thumbH,12);ctx.clip();
+    const ar=ogImg.naturalWidth/ogImg.naturalHeight;
+    let dw=thumbW,dh=thumbW/ar;
+    if(dh<thumbH){dh=thumbH;dw=thumbH*ar;}
+    ctx.drawImage(ogImg,M+(thumbW-dw)/2,thumbY+(thumbH-dh)/2,dw,dh);
+    ctx.restore();
+  } else {
+    ctx.save();ctx.beginPath();ctx.roundRect(M,thumbY,thumbW,thumbH,12);ctx.fill();ctx.restore();
+    ctx.fillStyle='rgba(26,107,255,0.06)';ctx.fillRect(M,thumbY,thumbW,thumbH);
+  }
+  ctx.strokeStyle='rgba(26,107,255,0.15)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.roundRect(M,thumbY,thumbW,thumbH,12);ctx.stroke();
+
+  // ── SERVES + entity + summary ──
+  let y=thumbY+thumbH+24;
   const entity=(p.topMatches&&p.topMatches[0])?p.topMatches[0]:(p.overallLabel||'Unknown entity');
   const summary=p._summary||'';
-
-  // Estimate content height to vertically center
-  let esz=38;ctx.font='500 '+esz+'px Georgia,serif';
+  ctx.font='19px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('SERVES',M,y+19);y+=38;
+  let esz=34;ctx.font='500 '+esz+'px Georgia,serif';
   while(ctx.measureText(entity).width>W-2*M&&esz>20){esz--;ctx.font='500 '+esz+'px Georgia,serif';}
-  const summaryLines=Math.ceil((summary.length*18)/(W-2*M-24))||2;
-  const contentH=22+14+esz+19+summaryLines*38+(isExcluded?50:0);
-  const startY=centerTop+Math.max(0,(centerBot-centerTop-contentH)/2);
-  let y=startY;
-
-  // SERVES label
-  ctx.font='19px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('SERVES',M,y+19);y+=19+14;
-
-  // Entity name
-  ctx.font='500 '+esz+'px Georgia,serif';ctx.fillStyle='#0c447c';ctx.fillText(entity,M,y+esz);y+=esz+19;
-
-  // Summary with dynamic left bar
+  ctx.fillStyle='#0c447c';ctx.fillText(entity,M,y+esz);y+=esz+18;
   if(summary){
     const qX=M+16;const maxW=W-M-qX;
-    ctx.font='italic 30px Georgia,serif';ctx.fillStyle='#0c2e52';
+    ctx.font='italic 25px Georgia,serif';
     const words=summary.split(' ');let line='';const lines=[];
     for(const w of words){const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}
     if(line)lines.push(line);
-    const lineH=38;const totalBarH=lines.length*lineH;
-    ctx.fillStyle='#1a6bff';ctx.fillRect(M,y,5,totalBarH);
-    lines.forEach(function(l,i){ctx.fillStyle='#0c2e52';ctx.fillText(l,qX,y+lineH*(i+1)-8);});
-    y+=totalBarH+16;
+    const lineH=34;const barH=lines.length*lineH;
+    ctx.fillStyle='#1a6bff';ctx.fillRect(M,y,5,barH);
+    lines.forEach(function(l,i){ctx.fillStyle='#0c2e52';ctx.fillText(l,qX,y+lineH*(i+1)-6);});
   }
-
-  // Exclusion note
   if(isExcluded){
-    ctx.font='16px Arial,sans-serif';ctx.fillStyle='#4a7fd4';
+    ctx.font='15px Arial,sans-serif';ctx.fillStyle='#4a7fd4';
     ctx.fillText('This post was evaluated but does not fit within the identified cluster.',M,y+16);
   }
 
-  // Score row anchored at bottom — divider, then score, then footer
-  const footerY=H-M;
-  const scoreY=footerY-28-18;
-  const dividerY=scoreY-54-12;
+  // ── Score row anchored at bottom ──
+  const footerY=H-M,scoreY=footerY-28-18,dividerY=scoreY-54-12;
   ctx.strokeStyle='rgba(26,107,255,0.18)';ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(M,dividerY);ctx.lineTo(W-M,dividerY);ctx.stroke();
   ctx.font='500 54px Arial,sans-serif';ctx.fillStyle='#1a6bff';
@@ -4404,7 +4475,7 @@ function hashToPrefix(deviceIdOrHash) {
   return Math.abs(h).toString(36).slice(0,4).toUpperCase();
 }
 
-async function saveToHistory(url, postText, result, srvVersion, inputTokens, outputTokens) {
+async function saveToHistory(url, postText, result, srvVersion, inputTokens, outputTokens, postData) {
   const serverUrl = getServerUrl();
   const srvVer = srvVersion || (serverUrl ? await fetchSrvVersion(serverUrl) : '?');
   const scanId = generateScanId(APP_VERSION, srvVer, 'ADMIN');
@@ -4428,7 +4499,10 @@ async function saveToHistory(url, postText, result, srvVersion, inputTokens, out
     comment: '',
     fullResult: result,
     inputTokens: inputTokens || 0,
-    outputTokens: outputTokens || 0
+    outputTokens: outputTokens || 0,
+    ogTitle: (postData && postData.ogTitle) || null,
+    ogImage: (postData && postData.ogImage) || null,
+    author: (postData && postData.author) || null
   };
   // Save to localStorage — keyed by scanId to prevent duplicates on sync
   const h = getHistory().filter(function(e){

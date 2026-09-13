@@ -1,5 +1,9 @@
 ## Changelog
 
+### v2.17.12 — bug fix (admin) | Server: v1.23.1 | Client: v1.17.8
+- Fixed "view full analysis" button unresponsive for posts scanned after v1.22.7 — onclick was passing string scan IDs unquoted, causing silent JS parse errors
+- openHistoryEntry now handles both legacy numeric IDs and new string scan IDs
+
 ### v2.17.11 — bug fix (admin) | Server: v1.22.7 | Client: v1.17.8
 - Investigate icon: changed to crosshair/target (matching client)
 - Clusters history icon: changed to Venn diagram (matching client)

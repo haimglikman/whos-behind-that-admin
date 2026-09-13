@@ -1,5 +1,14 @@
 ## Changelog
 
+### v2.18.0 (admin) | Server: v1.24.0 | Client: v1.17.8
+- Carousel post slide: new layout with headline, favicon, OG image thumbnail, author
+  - Hebrew/Arabic headlines right-aligned using offscreen RTL canvas
+  - Favicon loaded from Google's favicon service (google.com/s2/favicons)
+  - OG image thumbnail full-width below source row
+  - SERVES/entity/summary pushed below thumbnail, just above score row
+- History entries now store ogTitle, ogImage, author from server response
+- drawPostSlide is now async — loads favicon and OG image in parallel before rendering
+
 ### v2.17.12 — bug fix (admin) | Server: v1.23.1 | Client: v1.17.8
 - Fixed "view full analysis" button unresponsive for posts scanned after v1.22.7 — onclick was passing string scan IDs unquoted, causing silent JS parse errors
 - openHistoryEntry now handles both legacy numeric IDs and new string scan IDs

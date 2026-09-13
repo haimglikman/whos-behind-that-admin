@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.17.11</div>
+      <div class="version-badge" id="version-badge">v2.17.12</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1463,7 +1463,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.17.11';
+const APP_VERSION = '2.17.12';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -4608,7 +4608,7 @@ async function saveComment(scanId, comment) {
 
 function openHistoryEntry(id) {
   const h = getHistory();
-  const entry = h.find(function(e){ return e.id === id; });
+  const entry = h.find(function(e){ return String(e.id) === String(id) || e.scanId === id; });
   if (!entry || !entry.fullResult) { toast('Full result not available for this entry.'); return; }
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
   document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
@@ -4702,7 +4702,7 @@ function renderHistoryList(entries) {
         '</div>' +
         '<span class="scan-version">' + escHtml(e.appVersion||'?') + ' / srv ' + escHtml(e.serverVersion||'?') + '</span>' +
       '</div>' +
-      '<div style="cursor:pointer" onclick="openHistoryEntry(' + e.id + ')">' +
+      '<div style="cursor:pointer" onclick="openHistoryEntry(\'' + escHtml(String(e.id)) + '\')">' +
         '<div class="history-top">' +
           '<span class="history-url">' + escHtml(e.url) + '</span>' +
           '<div style="display:flex;align-items:center;gap:8px">' +

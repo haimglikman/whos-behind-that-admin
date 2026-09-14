@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.18.0</div>
+      <div class="version-badge" id="version-badge">v2.18.1</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1463,7 +1463,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.18.0';
+const APP_VERSION = '2.18.1';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -3112,7 +3112,14 @@ async function saveClusterToServer(synthesis, postIds, isolatedPostIds, connecti
   const allIds = (postIds||[]).concat(isolatedPostIds||[]);
   const postsArr = allIds.map(function(scanId) {
     const p = (basket||[]).find(function(e){ return e.scanId === scanId; }) || {};
-    return { scanId, url: p.url||'', topMatches: p.topMatches||[], overallScore: p.overallScore||0, ts: p.ts||'', source: p.source||'', _summary: p._summary||'' };
+    const histEntry = getHistory().find(function(h){ return h.scanId === scanId; }) || {};
+    return {
+      scanId, url: p.url||'', topMatches: p.topMatches||[], overallScore: p.overallScore||0,
+      ts: p.ts||'', source: p.source||'', _summary: p._summary||'',
+      ogTitle: histEntry.ogTitle || null,
+      ogImage: histEntry.ogImage || null,
+      author: histEntry.author || null
+    };
   });
   try {
     await fetch(serverUrl + '/clusters/save', {
@@ -3341,23 +3348,26 @@ async function drawPostSlide(p, date, isExcluded) {
   const pubDate = p.ts ? new Date(p.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) : date;
   const postId = p.scanId || '';
   const domain = url ? url.replace(/^https?:\/\//,'').split('/')[0] : '';
+  const siteName = domain.replace(/^www\./,'').replace(/\.(co\.il|com|net|org|il|io)$/,'').replace(/\./g,' ');
   const author = p.author || null;
   const ogTitle = p.ogTitle || null;
   const ogImage = p.ogImage || null;
+  const serverUrl = (typeof getServerUrl === 'function') ? getServerUrl() : '';
 
-  // Helper: load image with timeout
+  // Helper: load image via server proxy to bypass CORS
   function loadImg(src) {
     return new Promise(function(resolve) {
       if (!src) return resolve(null);
-      const img = new Image(); img.crossOrigin='anonymous';
-      const t = setTimeout(function(){ resolve(null); }, 4000);
+      const proxied = serverUrl && src.startsWith('http') ? serverUrl + '/proxy-image?url=' + encodeURIComponent(src) : src;
+      const img = new Image();
+      const t = setTimeout(function(){ resolve(null); }, 5000);
       img.onload = function(){ clearTimeout(t); resolve(img); };
       img.onerror = function(){ clearTimeout(t); resolve(null); };
-      img.src = src;
+      img.src = proxied;
     });
   }
 
-  // Load favicon and OG image in parallel
+  // Favicon via proxy too
   const faviconUrl = domain ? 'https://www.google.com/s2/favicons?domain='+domain+'&sz=64' : null;
   const [favicon, ogImg] = await Promise.all([loadImg(faviconUrl), loadImg(ogImage)]);
 
@@ -3410,14 +3420,14 @@ async function drawPostSlide(p, date, isExcluded) {
     ctx.fillText((domain||'?')[0].toUpperCase(),M+iconSize/2,srcY+iconSize/2+5);ctx.textAlign='left';
   }
   ctx.font='500 15px Arial,sans-serif';ctx.fillStyle='#185fa5';
-  ctx.fillText(domain||platform,M+iconSize+10,srcY+iconSize/2+5);
+  ctx.fillText(siteName||domain||platform,M+iconSize+10,srcY+iconSize/2+5);
   if (author) {
-    const dw=ctx.measureText(domain||platform).width;
+    const dw=ctx.measureText(siteName||domain||platform).width;
     ctx.font='15px Arial,sans-serif';ctx.fillStyle='#4a7fd4';
     ctx.fillText(' · '+author,M+iconSize+10+dw,srcY+iconSize/2+5);
   }
 
-  // ── OG image thumbnail ──
+  // ── OG image thumbnail — only render if image loaded ──
   const thumbY=srcY+iconSize+16;const thumbH=260;const thumbW=W-2*M;
   if (ogImg) {
     ctx.save();ctx.beginPath();ctx.roundRect(M,thumbY,thumbW,thumbH,12);ctx.clip();
@@ -3426,15 +3436,13 @@ async function drawPostSlide(p, date, isExcluded) {
     if(dh<thumbH){dh=thumbH;dw=thumbH*ar;}
     ctx.drawImage(ogImg,M+(thumbW-dw)/2,thumbY+(thumbH-dh)/2,dw,dh);
     ctx.restore();
-  } else {
-    ctx.save();ctx.beginPath();ctx.roundRect(M,thumbY,thumbW,thumbH,12);ctx.fill();ctx.restore();
-    ctx.fillStyle='rgba(26,107,255,0.06)';ctx.fillRect(M,thumbY,thumbW,thumbH);
+    ctx.strokeStyle='rgba(26,107,255,0.15)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.roundRect(M,thumbY,thumbW,thumbH,12);ctx.stroke();
   }
-  ctx.strokeStyle='rgba(26,107,255,0.15)';ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.roundRect(M,thumbY,thumbW,thumbH,12);ctx.stroke();
+  const afterThumb = ogImg ? thumbY+thumbH+24 : srcY+iconSize+24;
 
   // ── SERVES + entity + summary ──
-  let y=thumbY+thumbH+24;
+  let y=afterThumb;
   const entity=(p.topMatches&&p.topMatches[0])?p.topMatches[0]:(p.overallLabel||'Unknown entity');
   const summary=p._summary||'';
   ctx.font='19px Arial,sans-serif';ctx.fillStyle='#4a7fd4';ctx.fillText('SERVES',M,y+19);y+=38;

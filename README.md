@@ -1,5 +1,9 @@
 ## Changelog
 
+### v2.18.2 — bug fix (admin) | Server: v1.24.1 | Client: v1.17.8
+- Fixed "tainted canvas" export error — images now tested on an offscreen canvas before being drawn to the slide; if still tainted after proxy, image is skipped rather than blocking export
+- Added crossOrigin=anonymous to all image loads
+
 ### v2.18.1 — bug fix (admin) | Server: v1.24.1 | Client: v1.17.8
 - Post slide: images (favicon + OG thumbnail) now loaded via server proxy — fixes CORS black/blue box issue
 - Post slide: website display name shown instead of full URL (e.g. "ynet" instead of "www.ynet.co.il")

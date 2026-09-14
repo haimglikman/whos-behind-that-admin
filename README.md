@@ -1,5 +1,11 @@
 ## Changelog
 
+### v2.18.1 — bug fix (admin) | Server: v1.24.1 | Client: v1.17.8
+- Post slide: images (favicon + OG thumbnail) now loaded via server proxy — fixes CORS black/blue box issue
+- Post slide: website display name shown instead of full URL (e.g. "ynet" instead of "www.ynet.co.il")
+- Post slide: thumbnail only rendered when image actually loads — no empty placeholder box
+- postsArr now stores ogTitle, ogImage, author from history when saving cluster — fixes missing headline/thumbnail in carousel
+
 ### v2.18.0 (admin) | Server: v1.24.0 | Client: v1.17.8
 - Carousel post slide: new layout with headline, favicon, OG image thumbnail, author
   - Hebrew/Arabic headlines right-aligned using offscreen RTL canvas

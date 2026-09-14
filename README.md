@@ -1,5 +1,8 @@
 ## Changelog
 
+### v2.18.4 — bug fix (admin) | Server: v1.24.1 | Client: v1.17.8
+- Fixed ReferenceError in drawPostSlide — `url` was used before declaration, breaking carousel generation entirely
+
 ### v2.18.3 — bug fix (admin) | Server: v1.24.1 | Client: v1.17.8
 - Post slide: platform now detected from URL (X, Instagram, Facebook, YouTube, "News outlet") — no longer shows "Unknown"
 - Post slide: headline falls back to URL slug when ogTitle not stored (covers older scans)

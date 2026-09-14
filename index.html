@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.18.2</div>
+      <div class="version-badge" id="version-badge">v2.18.3</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1463,7 +1463,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.18.2';
+const APP_VERSION = '2.18.3';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -3343,7 +3343,16 @@ async function drawPostSlide(p, date, isExcluded) {
   makeLightBg(ctx);
   ctx.textBaseline='alphabetic';ctx.textAlign='left';
 
-  const platform = p.source || p.platform || 'Unknown';
+  // Detect platform from URL
+  function getPlatformDisplay(url) {
+    if (!url) return 'Unknown';
+    if (/x\.com|twitter\.com/i.test(url)) return 'X';
+    if (/instagram\.com/i.test(url)) return 'Instagram';
+    if (/facebook\.com|fb\.com/i.test(url)) return 'Facebook';
+    if (/youtube\.com|youtu\.be/i.test(url)) return 'YouTube';
+    return 'News outlet';
+  }
+  const platform = getPlatformDisplay(url);
   const url = p.url || '';
   const pubDate = p.ts ? new Date(p.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) : date;
   const postId = p.scanId || '';
@@ -3351,6 +3360,16 @@ async function drawPostSlide(p, date, isExcluded) {
   const siteName = domain.replace(/^www\./,'').replace(/\.(co\.il|com|net|org|il|io)$/,'').replace(/\./g,' ');
   const author = p.author || null;
   const ogTitle = p.ogTitle || null;
+  // Fallback title from URL path if no ogTitle stored
+  function titleFromUrl(u) {
+    if (!u) return null;
+    try {
+      const path = new URL(u).pathname;
+      const slug = path.split('/').filter(Boolean).pop() || '';
+      return slug.replace(/[-_]/g,' ').replace(/\.[^.]+$/,'').trim() || null;
+    } catch(e) { return null; }
+  }
+  const displayTitle = ogTitle || titleFromUrl(url);
   const ogImage = p.ogImage || null;
   const serverUrl = (typeof getServerUrl === 'function') ? getServerUrl() : '';
 
@@ -3396,7 +3415,7 @@ async function drawPostSlide(p, date, isExcluded) {
   });
 
   // ── Headline (RTL-aware) ──
-  const headline = ogTitle || '';
+  const headline = displayTitle || '';
   const isRTL = /[\u0590-\u05FF\u0600-\u06FF]/.test(headline);
   let hlEndY = my+8;
   if (headline) {
@@ -3441,8 +3460,8 @@ async function drawPostSlide(p, date, isExcluded) {
     ctx.fillText(' · '+author,M+iconSize+10+dw,srcY+iconSize/2+5);
   }
 
-  // ── OG image thumbnail — only render if image loaded ──
-  const thumbY=srcY+iconSize+16;const thumbH=260;const thumbW=W-2*M;
+  // ── OG image thumbnail ──
+  const thumbY=srcY+iconSize+16;const thumbH=240;const thumbW=W-2*M;
   if (ogImg) {
     ctx.save();ctx.beginPath();ctx.roundRect(M,thumbY,thumbW,thumbH,12);ctx.clip();
     const ar=ogImg.naturalWidth/ogImg.naturalHeight;
@@ -3452,8 +3471,18 @@ async function drawPostSlide(p, date, isExcluded) {
     ctx.restore();
     ctx.strokeStyle='rgba(26,107,255,0.15)';ctx.lineWidth=1.5;
     ctx.beginPath();ctx.roundRect(M,thumbY,thumbW,thumbH,12);ctx.stroke();
+  } else if (ogImage) {
+    // Image failed to load — show a muted placeholder with the domain
+    ctx.save();
+    ctx.fillStyle='rgba(26,107,255,0.06)';
+    ctx.beginPath();ctx.roundRect(M,thumbY,thumbW,thumbH,12);ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle='rgba(26,107,255,0.12)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.roundRect(M,thumbY,thumbW,thumbH,12);ctx.stroke();
+    ctx.font='15px Arial,sans-serif';ctx.fillStyle='rgba(26,107,255,0.4)';ctx.textAlign='center';
+    ctx.fillText('📰  '+domain,W/2,thumbY+thumbH/2+6);ctx.textAlign='left';
   }
-  const afterThumb = ogImg ? thumbY+thumbH+24 : srcY+iconSize+24;
+  const afterThumb = (ogImg||ogImage) ? thumbY+thumbH+24 : srcY+iconSize+24;
 
   // ── SERVES + entity + summary ──
   let y=afterThumb;

@@ -1,5 +1,8 @@
 ## Changelog
 
+### v2.18.5 — bug fix (admin) | Server: v1.24.2 | Client: v1.17.8
+- Post slide: social media author handle (X, Facebook, Instagram) now stored and shown as author when no byline is available
+
 ### v2.18.4 — bug fix (admin) | Server: v1.24.1 | Client: v1.17.8
 - Fixed ReferenceError in drawPostSlide — `url` was used before declaration, breaking carousel generation entirely
 

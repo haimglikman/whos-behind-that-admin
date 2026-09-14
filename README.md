@@ -1,5 +1,10 @@
 ## Changelog
 
+### v2.18.3 — bug fix (admin) | Server: v1.24.1 | Client: v1.17.8
+- Post slide: platform now detected from URL (X, Instagram, Facebook, YouTube, "News outlet") — no longer shows "Unknown"
+- Post slide: headline falls back to URL slug when ogTitle not stored (covers older scans)
+- Post slide: thumbnail placeholder restored when image fails CORS test — shows muted box with domain name instead of blank space
+
 ### v2.18.2 — bug fix (admin) | Server: v1.24.1 | Client: v1.17.8
 - Fixed "tainted canvas" export error — images now tested on an offscreen canvas before being drawn to the slide; if still tainted after proxy, image is skipped rather than blocking export
 - Added crossOrigin=anonymous to all image loads

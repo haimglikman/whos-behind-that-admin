@@ -1,5 +1,11 @@
 ## Changelog
 
+### v2.19.1 — bug fix (admin) | Server: v1.24.2 | Client: v1.17.8
+- Always-on manual paste toggle below the URL input — click to expand before even attempting a fetch (for Instagram, Reuters, paywalled sites)
+- Warning banner only shown when fallback is auto-triggered by a failed fetch
+- Manual metadata fields (title, author, og:image) cleared on reset
+- Toggle arrow indicator (▸/▾) shows open/closed state
+
 ### v2.19.0 — new feature (admin) | Server: v1.24.2 | Client: v1.17.8
 - Manual paste fallback: optional metadata form added — title, author/handle, og:image URL
 - Fields are stored in history and used in carousel post slides, just like auto-fetched metadata

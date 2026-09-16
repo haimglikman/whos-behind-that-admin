@@ -1,5 +1,10 @@
 ## Changelog
 
+### v2.19.0 — new feature (admin) | Server: v1.24.2 | Client: v1.17.8
+- Manual paste fallback: optional metadata form added — title, author/handle, og:image URL
+- Fields are stored in history and used in carousel post slides, just like auto-fetched metadata
+- Covers blocked sites (Reuters, WSJ, etc.) where metadata can't be fetched server-side
+
 ### v2.18.5 — bug fix (admin) | Server: v1.24.2 | Client: v1.17.8
 - Post slide: social media author handle (X, Facebook, Instagram) now stored and shown as author when no byline is available
 

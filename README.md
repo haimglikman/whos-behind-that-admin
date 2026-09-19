@@ -1,5 +1,9 @@
 ## Changelog
 
+### v2.20.0 (admin) | Server: v1.25.0 | Client: v1.18.0
+- Actor card: bot probability badge (color-coded: green/amber/red) + reasoning sentence
+- Bot fields stored in actor history and synced from server
+
 ### v2.19.1 — bug fix (admin) | Server: v1.24.2 | Client: v1.17.8
 - Always-on manual paste toggle below the URL input — click to expand before even attempting a fetch (for Instagram, Reuters, paywalled sites)
 - Warning banner only shown when fallback is auto-triggered by a failed fetch

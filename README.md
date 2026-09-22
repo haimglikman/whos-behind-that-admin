@@ -1,5 +1,12 @@
 ## Changelog
 
+### v2.21.0 (admin) | Server: v1.28.0 | Client: v1.18.1
+- TikTok coverage: TikTok (and YouTube) in Source filter; actor research for TikTok posts; TikTok name and icon on carousel slides
+- User filter replaces the Admin/Client Source filter — "Admin" option plus individual client users
+- New About & Setup section: Tools & dependencies — all third-party services, their purpose, and config
+- Fixed: scans stored as "unknown" platform now detected from URL — Source filters include older admin news/YouTube/TikTok scans
+- In-app changelog backfilled for v2.17–v2.21
+
 ### v2.20.0 (admin) | Server: v1.25.0 | Client: v1.18.0
 - Actor card: bot probability badge (color-coded: green/amber/red) + reasoning sentence
 - Bot fields stored in actor history and synced from server

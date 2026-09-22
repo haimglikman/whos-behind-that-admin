@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.20.0</div>
+      <div class="version-badge" id="version-badge">v2.21.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -483,6 +483,8 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
                 <option value="x">X (Twitter)</option>
                 <option value="instagram">Instagram</option>
                 <option value="facebook">Facebook</option>
+                <option value="tiktok">TikTok</option>
+                <option value="youtube">YouTube</option>
                 <option value="news">News (all)</option>
               </select>
             </div>
@@ -535,17 +537,10 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
               </select>
             </div>
             <div class="filter-group">
-              <div class="filter-label">Source</div>
-              <select class="filter-select" id="f-source" onchange="applyFilters()">
-                <option value="">All sources</option>
-                <option value="admin">Admin</option>
-                <option value="client">Client</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <div class="filter-label">Client user</div>
+              <div class="filter-label">User</div>
               <select class="filter-select" id="f-user" onchange="applyFilters()">
                 <option value="">All users</option>
+                <option value="__admin__">Admin</option>
               </select>
             </div>
             <div class="filter-group">
@@ -812,6 +807,43 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           </div>
         </div>
 
+        <!-- Tools & dependencies -->
+        <div class="about-section" style="margin-bottom:20px">
+          <h2>Tools &amp; dependencies</h2>
+          <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Third-party services and libraries WBT relies on. Config shows the Render environment variable where one is required.</p>
+          <div class="card" style="padding:0;overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:11px">
+              <thead><tr style="text-align:left;border-bottom:1px solid var(--border)">
+                <th style="padding:8px 10px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Service</th>
+                <th style="padding:8px 10px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Used for</th>
+                <th style="padding:8px 10px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Used by</th>
+                <th style="padding:8px 10px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Config</th>
+              </tr></thead>
+              <tbody>
+                <tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Hosting &amp; data</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Render</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Hosts the WBT server (Node.js / Express)</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Neon PostgreSQL</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Shared database: scans, clusters, actors, entities, prompts, FAQ, client sessions</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">DATABASE_URL</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">GitHub</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Source repositories; pushes trigger Render deploys</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">All</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">GitHub Pages</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Hosts the admin and client apps</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Admin, Client</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
+                <tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">AI &amp; transcription</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Anthropic Claude API</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Entity scoring, coherence checks, cluster connections and synopsis, actor research with web search, bot detection, translation</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">ANTHROPIC_API_KEY</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Groq (Whisper large-v3)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Transcribes video audio — TikTok, Instagram, Facebook, X</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">GROQ_API_KEY</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">TranscriptAPI.com</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">YouTube video transcripts</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">transcriptapi_API_KEY</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">YouTube Data API v3 (Google Cloud)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">YouTube video duration and live-stream checks</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">YOUTUBE_API_KEY</td></tr>
+                <tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Content access</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">yt-dlp (open source)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Downloads video audio and caption from TikTok, Instagram, Facebook, X. Binary fetched from GitHub releases on server start</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">X oEmbed (publish.twitter.com)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Fetches X post text</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Internet Archive (Wayback Machine)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Fallback for news articles that block direct access</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Google favicon service</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Source icons on carousel slides (loaded through the server image proxy)</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Admin</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
+                <tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Libraries</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">npm: express, cors, node-fetch, cheerio, pg</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Web server, CORS, HTTP requests, HTML parsing, PostgreSQL client</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">JSZip (via cdnjs)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Packages carousel slides into a ZIP download</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Admin</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Google Fonts</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">DM Sans, DM Mono, Nunito</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Admin, Client</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Stats section -->
         <div class="about-section" style="margin-bottom:20px">
           <h2>Stats</h2>
@@ -875,8 +907,52 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <h2>Changelog</h2>
 
           <div class="changelog-item">
-            <div class="changelog-ver">v2.16.0</div>
+            <div class="changelog-ver">v2.21.0</div>
             <div class="changelog-date">Current version</div>
+            <ul>
+              <li><strong>TikTok coverage:</strong> TikTok (and YouTube) added to the Source filter; actor research available for TikTok posts; TikTok name and icon on carousel slides.</li>
+              <li><strong>User filter:</strong> replaces the Admin/Client source filter — select Admin or a specific client user.</li>
+              <li><strong>Tools &amp; dependencies:</strong> new About &amp; Setup section listing every third-party service WBT uses and why.</li>
+              <li><strong>Platform detection:</strong> older admin scans stored as 'unknown' are now recognized by URL, so Source filters include them.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.20.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Bot detection:</strong> actor cards show a colour-coded bot probability with the reasoning behind it.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.19.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Manual paste:</strong> always-available paste option for blocked sources (Instagram, Reuters, paywalls), with optional title, author and image fields for carousel slides.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.18.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Richer carousel post slides:</strong> article headline, source icon, author and article image; Hebrew/Arabic headlines right-aligned.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.17.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Marketing tab:</strong> generate Instagram carousels (hook, post, cluster and summary slides) from any cluster, exported as a ZIP of JPEGs, with a generation log.</li>
+              <li><strong>Stats</strong> moved into About &amp; Setup.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.16.0</div>
+            <div class="changelog-date">Previous version</div>
             <ul>
               <li><strong>Deployed versions panel:</strong> New section in About & Setup showing live versions of app, server, entities, and all AI prompts with last updated timestamp.</li>
               <li><strong>Prompts tab improvements:</strong> Edit modal pre-fills current prompt text; all 6 prompts editable without redeploy.</li>
@@ -1485,7 +1561,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.20.0';
+const APP_VERSION = '2.21.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -1937,7 +2013,7 @@ function renderBasket() {
   el.innerHTML = basket.map(function(e) {
     const d = e.ts ? new Date(e.ts) : null;
     const dateStr = d ? d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '—';
-    const platform = e.platform === 'news' ? getDomainDisplayName(e.url) : (e.platform || 'unknown');
+    const platform = effectivePlatform(e) === 'news' ? getDomainDisplayName(e.url) : effectivePlatform(e);
     const topEntity = (e.topMatches||[])[0] || e.overallLabel || '—';
     const excerpt = (e.postText||'').slice(0,180).replace(/</g,'&lt;');
     const tooltip = escHtml(topEntity) + ' · ' + (e.overallScore||0) + '%' + (e.postText ? '&#10;&#10;"' + excerpt + (e.postText.length > 180 ? '…' : '') + '"' : '');
@@ -2283,7 +2359,7 @@ function renderInvestigateLegend(basket, clusters, isolated, postClusterMap, pre
       const idx = sorted.indexOf(p) + 1;
       const color = cis.length > 0 ? CLUSTER_COLORS[cis[0] % CLUSTER_COLORS.length] : CLUSTER_COLORS[0];
       const d = p.ts ? new Date(p.ts) : null;
-      const platform = p.platform === 'news' ? getDomainDisplayName(p.url) : (p.platform || '');
+      const platform = effectivePlatform(p) === 'news' ? getDomainDisplayName(p.url) : effectivePlatform(p);
       html += '<div style="padding:7px 0;border-top:1px solid var(--border)">';
       html += '<div style="display:flex;align-items:center;gap:8px;font-size:12px;flex-wrap:wrap">';
       html += '<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:' + color.bg + ';border:1.5px solid ' + color.border + ';font-size:10px;font-weight:700;color:' + color.text + ';flex-shrink:0">P' + idx + '</span>';
@@ -2471,10 +2547,20 @@ function pillClass(type) {
 function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 function detectPlatformClient(url) {
-  if (/x\.com|twitter\.com/i.test(url)) return 'x';
-  if (/instagram\.com/i.test(url)) return 'instagram';
-  if (/facebook\.com|fb\.com/i.test(url)) return 'facebook';
+  let host = '', path = '';
+  try { const u = new URL(url); host = u.hostname.replace(/^www\./, '').toLowerCase(); path = u.pathname; } catch (e) { return 'unknown'; }
+  const is = function(d){ return host === d || host.endsWith('.' + d); };
+  if (is('x.com') || is('twitter.com')) return 'x';
+  if (is('instagram.com')) return 'instagram';
+  if (is('facebook.com') || is('fb.com') || is('fb.watch')) return 'facebook';
+  if (is('tiktok.com')) return 'tiktok';
+  if (is('youtube.com') || is('youtu.be')) return 'youtube';
+  if (path && path !== '/') return 'news';
   return 'unknown';
+}
+// Stored platform may be 'unknown' for older admin scans — derive from URL
+function effectivePlatform(e) {
+  return (e.platform && e.platform !== 'unknown') ? e.platform : detectPlatformClient(e.url || '');
 }
 
 // ─────────────────────────────────────────────
@@ -2510,11 +2596,11 @@ function initEntityFilter() {
   // Also populate news sites into Source dropdown
   const sourceEl = document.getElementById('f-platform');
   if (sourceEl) {
-    // Remove existing news site options (keep first 5: all/x/instagram/facebook/news-all)
-    while (sourceEl.options.length > 5) sourceEl.remove(5);
+    // Remove existing per-site news options (static options stay)
+    Array.from(sourceEl.options).forEach(function(o){ if (o.value.indexOf('news:') === 0) o.remove(); });
     const sites = {};
     h.forEach(function(e) {
-      if (e.platform === 'news' && e.url) {
+      if (effectivePlatform(e) === 'news' && e.url) {
         try { const domain = new URL(e.url).hostname.replace(/^www\./,''); sites[domain] = getDomainDisplayName(e.url); } catch(err) {}
       }
     });
@@ -2611,7 +2697,6 @@ function applyFilters() {
   const minAI = parseInt(document.getElementById('f-min-ai').value) || 0;
   const alignment = document.getElementById('f-alignment').value;
   const hasComment = document.getElementById('f-has-comment').value;
-  const source = document.getElementById('f-source') ? document.getElementById('f-source').value : '';
   const user = document.getElementById('f-user') ? document.getElementById('f-user').value : '';
   const actorFilter = (document.getElementById('f-actor')||{value:''}).value.trim().toLowerCase().replace(/^@/,'');
   // newsSiteFilter already declared above from platform value
@@ -2621,7 +2706,7 @@ function applyFilters() {
   if (newsSiteEl && newsSiteEl.options.length <= 1) {
     const sites = {};
     h.forEach(function(e) {
-      if (e.platform === 'news' && e.url) {
+      if (effectivePlatform(e) === 'news' && e.url) {
         const name = getDomainDisplayName(e.url);
         try { const domain = new URL(e.url).hostname.replace(/^www\./,''); sites[domain] = name; } catch(err) {}
       }
@@ -2640,8 +2725,7 @@ function applyFilters() {
   const filtered = h.filter(function(e) {
     if (scanId && !(e.scanId||'').toLowerCase().includes(scanId)) return false;
     if (urlFilter && !(e.url||'').toLowerCase().includes(urlFilter)) return false;
-    if (platformBase && e.platform && e.platform !== platformBase) return false;
-    if (platformBase && !e.platform) { if (detectPlatformClient(e.url||'') !== platformBase) return false; }
+    if (platformBase && effectivePlatform(e) !== platformBase) return false;
     if (appVersionFrom && cmpVer(e.appVersion||'0.0.0', appVersionFrom) < 0) return false;
     if (appVersionTo && cmpVer(e.appVersion||'0.0.0', appVersionTo) > 0) return false;
     if (serverVersionFrom && cmpVer(e.serverVersion||'0.0.0', serverVersionFrom) < 0) return false;
@@ -2660,8 +2744,8 @@ function applyFilters() {
     if (alignment === 'secondary' && !(e.fullResult && (e.fullResult.matches||[]).some(function(m){ return m.secondary; }))) return false;
     if (alignment === 'none' && e.fullResult && (e.fullResult.matches||[]).length > 0) return false;
     if (hasComment === 'true' && !(e.comment && e.comment.trim())) return false;
-    if (source && (e.source||'admin') !== source) return false;
-    if (user && e.deviceId !== user) return false;
+    if (user === '__admin__') { if ((e.source||'admin') !== 'admin') return false; }
+    else if (user && e.deviceId !== user) return false;
     if (actorFilter) {
       const actorForScan = actorsList.find(function(a){ return a.scanId === e.scanId || (a.handle||'').toLowerCase().replace(/^@/,'') === actorFilter; });
       if (!actorForScan) return false;
@@ -2677,7 +2761,7 @@ function applyFilters() {
 }
 
 function clearFilters() {
-  ['f-platform','f-alignment','f-has-comment','f-source','f-user'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
+  ['f-platform','f-alignment','f-has-comment','f-user'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
   ['f-app-version','f-app-version-to','f-server-version','f-server-version-to','f-scan-id','f-url','f-date-from','f-date-to','f-min-score','f-min-ai'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
   const actorSel = document.getElementById('f-actor'); if (actorSel) actorSel.value = '';
   selectedEntities=[];
@@ -2715,6 +2799,9 @@ function extractHandle(url, post) {
   // X/Twitter: handle is in the URL
   let m = url.match(/(?:x\.com|twitter\.com)\/([^\/\?]+)/i);
   if (m && m[1] && !['i','home','search','explore'].includes(m[1])) return m[1];
+  // TikTok: handle is in the URL (tiktok.com/@handle/video/...)
+  m = url.match(/tiktok\.com\/@([^\/\?]+)/i);
+  if (m && m[1]) return m[1];
   // Use author from server response if available (Instagram oEmbed)
   if (post && post.authorHandle) return post.authorHandle;
   if (post && post.author) return post.author;
@@ -3408,9 +3495,11 @@ async function drawPostSlide(p, date, isExcluded) {
     if (/instagram\.com/i.test(u)) return 'Instagram';
     if (/facebook\.com|fb\.com/i.test(u)) return 'Facebook';
     if (/youtube\.com|youtu\.be/i.test(u)) return 'YouTube';
+    if (/tiktok\.com/i.test(u)) return 'TikTok';
     return 'News outlet';
   }
   const platform = getPlatformDisplay(url);
+  const isSocial = platform !== 'News outlet' && platform !== 'Unknown';
   // Fallback title from URL path if no ogTitle stored
   function titleFromUrl(u) {
     if (!u) return null;
@@ -3503,12 +3592,14 @@ async function drawPostSlide(p, date, isExcluded) {
     ctx.font='500 13px Arial,sans-serif';ctx.fillStyle='#185fa5';ctx.textAlign='center';
     ctx.fillText((domain||'?')[0].toUpperCase(),M+iconSize/2,srcY+iconSize/2+5);ctx.textAlign='left';
   }
+  const sourceLabel = isSocial ? platform : (siteName||domain||platform);
+  const authorLabel = author ? ((isSocial && author.charAt(0) !== '@') ? '@' + author : author) : null;
   ctx.font='500 15px Arial,sans-serif';ctx.fillStyle='#185fa5';
-  ctx.fillText(siteName||domain||platform,M+iconSize+10,srcY+iconSize/2+5);
-  if (author) {
-    const dw=ctx.measureText(siteName||domain||platform).width;
+  ctx.fillText(sourceLabel,M+iconSize+10,srcY+iconSize/2+5);
+  if (authorLabel) {
+    const dw=ctx.measureText(sourceLabel).width;
     ctx.font='15px Arial,sans-serif';ctx.fillStyle='#4a7fd4';
-    ctx.fillText(' · '+author,M+iconSize+10+dw,srcY+iconSize/2+5);
+    ctx.fillText(' · '+authorLabel,M+iconSize+10+dw,srcY+iconSize/2+5);
   }
 
   // ── OG image thumbnail ──

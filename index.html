@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.21.0</div>
+      <div class="version-badge" id="version-badge">v2.24.1</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -414,7 +414,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
             </div>
           </div>
           <div class="analysis-card" style="margin-bottom:12px">
-            <div class="card-label">Narrative alignment — entities at 85%+ fit</div>
+            <div class="card-label">Narrative alignment — <span id="alignment-rule">entities at 85%+ fit</span></div>
             <div id="r-primary-matches"></div>
             <div id="r-secondary-matches"></div>
           </div>
@@ -544,6 +544,12 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
               </select>
             </div>
             <div class="filter-group">
+              <div class="filter-label">Model</div>
+              <select class="filter-select" id="f-model" onchange="applyFilters()">
+                <option value="">All models</option>
+              </select>
+            </div>
+            <div class="filter-group">
               <div class="filter-label">Actor handle</div>
               <select class="filter-input" id="f-actor" onchange="applyFilters()" style="width:100%">
                 <option value="">All actors</option>
@@ -636,8 +642,9 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
             <select id="prompts-history-select" onchange="loadPromptHistory(this.value)" class="filter-input" style="width:200px">
               <option value="">Select prompt...</option>
-              <option value="scan">Scan</option>
-              <option value="coherence">Coherence</option>
+              <option value="deep_score">Judge</option>
+              <option value="scan">Scan (legacy)</option>
+              <option value="coherence">Coherence (legacy)</option>
               <option value="connection">Connection</option>
               <option value="synopsis">Synopsis</option>
               <option value="actor">Actor</option>
@@ -662,10 +669,14 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
               <div>
                 <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Model</div>
                 <select id="prompt-modal-model" class="filter-input" style="width:100%">
+                  <option value="claude-opus-5-5">Claude Opus 5.5</option>
+                  <option value="claude-sonnet-5">Claude Sonnet 5</option>
                   <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
-                  <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
-                  <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
-                  <option value="claude-opus-4-6">Claude Opus 4.6</option>
+                  <optgroup label="Legacy — replaced automatically on server v2">
+                    <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+                    <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
+                    <option value="claude-opus-4-6">Claude Opus 4.6</option>
+                  </optgroup>
                 </select>
               </div>
             </div>
@@ -810,7 +821,8 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <!-- Tools & dependencies -->
         <div class="about-section" style="margin-bottom:20px">
           <h2>Tools &amp; dependencies</h2>
-          <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Third-party services and libraries WBT relies on. Config shows the Render environment variable where one is required.</p>
+          <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Third-party services, models and libraries WBT relies on. Config shows the Render environment variable where one is required; models listed are the defaults, and each can be changed with its variable.</p>
+          <div id="tools-live-config" style="font-size:11px;color:var(--text2);margin-bottom:10px;font-family:var(--mono)"></div>
           <div class="card" style="padding:0;overflow-x:auto">
             <table style="width:100%;border-collapse:collapse;font-size:11px">
               <thead><tr style="text-align:left;border-bottom:1px solid var(--border)">
@@ -825,9 +837,16 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Neon PostgreSQL</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Shared database: scans, clusters, actors, entities, prompts, FAQ, client sessions</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">DATABASE_URL</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">GitHub</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Source repositories; pushes trigger Render deploys</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">All</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">GitHub Pages</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Hosts the admin and client apps</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Admin, Client</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
+                <tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Models used</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Jev 1.13 (TypeSafe)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Screening: finds which entities a post is about (mentioned, criticized, praised), and pre-checks post pairs in cluster investigations. Only its shortlist reaches Claude.</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">JEV_MODEL</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Claude Opus 5.5</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">The judge: final alignment scores, primary/secondary verdict, and the why/missing explanations</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">CLAUDE_DEEP_MODEL</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Claude Sonnet 5</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Default model: actor research and bot detection, cluster synopsis, convergent interest, entity refresh, web-search post fetching, publication research</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">CLAUDE_DEFAULT_MODEL</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Claude Haiku 4.5</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Fast tasks: translating Hebrew/Arabic posts to English for screening, and cluster connection checks</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">CLAUDE_FAST_MODEL</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Whisper large-v3 (Groq)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Transcribes video audio: TikTok, Instagram, Facebook, X</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
                 <tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">AI &amp; transcription</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Anthropic Claude API</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Entity scoring, coherence checks, cluster connections and synopsis, actor research with web search, bot detection, translation</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">ANTHROPIC_API_KEY</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Groq (Whisper large-v3)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Transcribes video audio — TikTok, Instagram, Facebook, X</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">GROQ_API_KEY</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">TypeSafe (via OpenRouter)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Runs the Jev screening model. Accessed through OpenRouter while TypeSafe's own API is waitlisted</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">TYPESAFE_API_KEY, TYPESAFE_API_URL</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">TranscriptAPI.com</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">YouTube video transcripts</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">transcriptapi_API_KEY</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">YouTube Data API v3 (Google Cloud)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">YouTube video duration and live-stream checks</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">YOUTUBE_API_KEY</td></tr>
                 <tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Content access</td></tr>
@@ -867,7 +886,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           </div>
           <div class="card">
             <div class="card-label">Token usage</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:14px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:16px;margin-bottom:14px">
               <div>
                 <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Post scan tokens</div>
                 <div style="font-size:22px;font-weight:700;color:var(--text);font-family:var(--mono)" id="stats-token-post">—</div>
@@ -877,8 +896,13 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
                 <div style="font-size:22px;font-weight:700;color:var(--text);font-family:var(--mono)" id="stats-token-actor">—</div>
               </div>
               <div>
-                <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Total tokens</div>
+                <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Total Claude tokens</div>
                 <div style="font-size:22px;font-weight:700;color:var(--blue);font-family:var(--mono)" id="stats-token-total">—</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Jev screening tokens</div>
+                <div style="font-size:22px;font-weight:700;color:var(--text);font-family:var(--mono)" id="stats-token-jev">—</div>
+                <div style="font-size:10px;color:var(--text3);margin-top:2px" id="stats-jev-calls"></div>
               </div>
             </div>
             <div style="padding-top:14px;border-top:1px solid var(--border)">
@@ -886,6 +910,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
                 <div>
                   <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Estimated cost</div>
                   <div style="font-size:28px;font-weight:700;color:var(--green);font-family:var(--mono)" id="stats-cost">—</div>
+                  <div style="font-size:10px;color:var(--text3);margin-top:2px" id="stats-cost-breakdown"></div>
                 </div>
                 <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                   <div style="font-size:11px;color:var(--text3);font-weight:600">Rates ($/M tokens)</div>
@@ -894,8 +919,10 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
                     <input type="number" id="rate-input" step="0.01" style="width:64px;font-size:11px;padding:4px 7px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);font-family:var(--mono);outline:none" oninput="saveRates();renderStatsPage()" />
                     <span style="font-size:11px;color:var(--text3)">Output:</span>
                     <input type="number" id="rate-output" step="0.01" style="width:64px;font-size:11px;padding:4px 7px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);font-family:var(--mono);outline:none" oninput="saveRates();renderStatsPage()" />
+                    <span style="font-size:11px;color:var(--text3)">Jev:</span>
+                    <input type="number" id="rate-jev" step="0.001" style="width:64px;font-size:11px;padding:4px 7px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);font-family:var(--mono);outline:none" oninput="saveRates();renderStatsPage()" />
                   </div>
-                  <div style="font-size:10px;color:var(--text3)">Note: only scans from v1.15.0+ include token data</div>
+                  <div style="font-size:10px;color:var(--text3)">Note: only scans from v1.15.0+ include token data; Jev usage is tracked from server v2.0.4</div>
                 </div>
               </div>
             </div>
@@ -907,8 +934,35 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <h2>Changelog</h2>
 
           <div class="changelog-item">
-            <div class="changelog-ver">v2.21.0</div>
+            <div class="changelog-ver">v2.24.0</div>
             <div class="changelog-date">Current version</div>
+            <ul>
+              <li><strong>Post history:</strong> each scan shows Claude and Jev tokens, their combined cost, and the models used; new Model filter.</li>
+              <li><strong>Tools &amp; dependencies:</strong> new Models used section, plus the live model configuration reported by the server.</li>
+              <li><strong>Fixes:</strong> scans synced from the server (client scans, other devices) now show token counts; manually pasted scans now record tokens.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.23.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Jev usage monitoring:</strong> Stats show Jev screening tokens (post screenings and cluster checks), a Jev rate, and a Claude / Jev cost split.</li>
+              <li><strong>Fix:</strong> token stats now load on the first visit to About &amp; Setup.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.22.0</div>
+            <div class="changelog-date">Previous version</div>
+            <ul>
+              <li><strong>Verdict-based results for the v2 engine:</strong> with server 2.x, matches are shown by the judge's verdict — primary from 60%, secondary from 50% — instead of a fixed 85% cut-off. Results from server 1.x keep the 85% rule.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.21.0</div>
+            <div class="changelog-date">Previous version</div>
             <ul>
               <li><strong>TikTok coverage:</strong> TikTok (and YouTube) added to the Source filter; actor research available for TikTok posts; TikTok name and icon on carousel slides.</li>
               <li><strong>User filter:</strong> replaces the Admin/Client source filter — select Admin or a specific client user.</li>
@@ -1561,7 +1615,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.21.0';
+const APP_VERSION = '2.24.1';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -1826,13 +1880,18 @@ function updateHistoryCount() {
 // TOKEN TRACKING
 // ─────────────────────────────────────────────
 function getRates() {
-  try { return JSON.parse(localStorage.getItem('wbt_rates') || '{"input":3,"output":15}'); }
-  catch(e) { return { input: 3, output: 15 }; }
+  let r;
+  try { r = JSON.parse(localStorage.getItem('wbt_rates') || '{"input":3,"output":15}'); }
+  catch(e) { r = { input: 3, output: 15 }; }
+  if (typeof r.jev !== 'number') r.jev = 0.042;
+  return r;
 }
 function saveRates() {
   const inp = parseFloat(document.getElementById('rate-input').value) || 3;
   const out = parseFloat(document.getElementById('rate-output').value) || 15;
-  localStorage.setItem('wbt_rates', JSON.stringify({ input: inp, output: out }));
+  const jevEl = document.getElementById('rate-jev');
+  const jev = jevEl ? (parseFloat(jevEl.value) || 0.042) : 0.042;
+  localStorage.setItem('wbt_rates', JSON.stringify({ input: inp, output: out, jev: jev }));
 }
 function initRates() {
   const r = getRates();
@@ -1840,6 +1899,8 @@ function initRates() {
   const outEl = document.getElementById('rate-output');
   if (inEl) inEl.value = r.input;
   if (outEl) outEl.value = r.output;
+  const jevEl = document.getElementById('rate-jev');
+  if (jevEl) jevEl.value = r.jev;
 }
 function formatTokens(n) {
   if (!n) return '0';
@@ -1855,24 +1916,8 @@ function calcCost(inTok, outTok) {
 let _tokenStats = null;
 
 function updateTokenDisplay() {
-  if (!_tokenStats) return;
-  const s = _tokenStats;
-  const postIn = (s.post?.admin?.in || 0) + (s.post?.client?.in || 0);
-  const postOut = (s.post?.admin?.out || 0) + (s.post?.client?.out || 0);
-  const actorIn = s.actor?.in || 0;
-  const actorOut = s.actor?.out || 0;
-  const totalIn = postIn + actorIn;
-  const totalOut = postOut + actorOut;
-  const cost = calcCost(totalIn, totalOut);
-
-  const postEl = document.getElementById('token-post');
-  const actorEl = document.getElementById('token-actor');
-  const totalEl = document.getElementById('token-total');
-  const costEl = document.getElementById('token-cost');
-  if (postEl) postEl.textContent = formatTokens(postIn + postOut);
-  if (actorEl) actorEl.textContent = formatTokens(actorIn + actorOut);
-  if (totalEl) totalEl.textContent = formatTokens(totalIn + totalOut);
-  if (costEl) costEl.textContent = '$' + cost.toFixed(3);
+  // Server stats arrived — re-render the About & Setup stats (old element IDs no longer exist)
+  if (_tokenStats) renderStatsPage();
 }
 
 async function fetchTokenStats() {
@@ -2424,7 +2469,15 @@ function renderStatsPage() {
     const actorOut = s.actor?.out||0;
     const totalIn = postIn + actorIn;
     const totalOut = postOut + actorOut;
-    const cost = calcCost(totalIn, totalOut);
+    const claudeCost = calcCost(totalIn, totalOut);
+    const jevScan = (s.jev && s.jev.scan) || { tokens: 0, calls: 0 };
+    const jevPairs = (s.jev && s.jev.pairs) || { tokens: 0, calls: 0 };
+    const jevTokens = jevScan.tokens + jevPairs.tokens;
+    const jevCost = (jevTokens / 1000000) * getRates().jev;
+    const cost = claudeCost + jevCost;
+    if (el('stats-token-jev')) el('stats-token-jev').textContent = s.jev ? formatTokens(jevTokens) : '—';
+    if (el('stats-jev-calls')) el('stats-jev-calls').textContent = s.jev ? (jevScan.calls + ' post screening' + (jevScan.calls === 1 ? '' : 's') + ' · ' + jevPairs.calls + ' cluster check' + (jevPairs.calls === 1 ? '' : 's')) : 'Requires server v2.0.4+';
+    if (el('stats-cost-breakdown')) el('stats-cost-breakdown').textContent = 'Claude $' + claudeCost.toFixed(3) + ' · Jev $' + jevCost.toFixed(4);
     if (el('stats-token-post')) el('stats-token-post').textContent = formatTokens(postIn+postOut);
     if (el('stats-token-actor')) el('stats-token-actor').textContent = formatTokens(actorIn+actorOut);
     if (el('stats-token-total')) el('stats-token-total').textContent = formatTokens(totalIn+totalOut);
@@ -2698,6 +2751,7 @@ function applyFilters() {
   const alignment = document.getElementById('f-alignment').value;
   const hasComment = document.getElementById('f-has-comment').value;
   const user = document.getElementById('f-user') ? document.getElementById('f-user').value : '';
+  const modelFilter = (document.getElementById('f-model') || { value: '' }).value;
   const actorFilter = (document.getElementById('f-actor')||{value:''}).value.trim().toLowerCase().replace(/^@/,'');
   // newsSiteFilter already declared above from platform value
 
@@ -2744,6 +2798,7 @@ function applyFilters() {
     if (alignment === 'secondary' && !(e.fullResult && (e.fullResult.matches||[]).some(function(m){ return m.secondary; }))) return false;
     if (alignment === 'none' && e.fullResult && (e.fullResult.matches||[]).length > 0) return false;
     if (hasComment === 'true' && !(e.comment && e.comment.trim())) return false;
+    if (modelFilter && scanJudgeLabel(e) !== modelFilter) return false;
     if (user === '__admin__') { if ((e.source||'admin') !== 'admin') return false; }
     else if (user && e.deviceId !== user) return false;
     if (actorFilter) {
@@ -2761,7 +2816,7 @@ function applyFilters() {
 }
 
 function clearFilters() {
-  ['f-platform','f-alignment','f-has-comment','f-user'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
+  ['f-platform','f-alignment','f-has-comment','f-user','f-model'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
   ['f-app-version','f-app-version-to','f-server-version','f-server-version-to','f-scan-id','f-url','f-date-from','f-date-to','f-min-score','f-min-ai'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
   const actorSel = document.getElementById('f-actor'); if (actorSel) actorSel.value = '';
   selectedEntities=[];
@@ -2923,11 +2978,12 @@ async function analyzeWithManualText() {
     advance(3); await delay(300); advance(4); await delay(300); advance(5); await delay(200);
     const result = buildResult(analysis, {text: postText}, entities);
     const srvVer = await fetchSrvVersion(serverUrl);
-    const entry = await saveToHistory(url, postText, result, srvVer, undefined, undefined, {
+    const at = analysis._tokens || {};
+    const entry = await saveToHistory(url, postText, result, srvVer, at.input, at.output, {
       ogTitle: manualOgTitle,
       ogImage: manualOgImage,
       author: manualAuthor
-    }).catch(function(e){ console.warn('History save error:', e.message); return null; });
+    }, { jevTokens: (analysis.triage && analysis.triage.tokens) || 0, models: analysis.models || null }).catch(function(e){ console.warn('History save error:', e.message); return null; });
     result.scanId = entry ? entry.scanId : '';
     showResults(url, result);
     recordScan();
@@ -2959,7 +3015,8 @@ async function performServerAnalysis(url, serverUrl) {
   const finalUrl = data.url || url;
   const result = buildResult(data.analysis, data.post, entities);
   const srvVer = await fetchSrvVersion(serverUrl);
-  const entry = await saveToHistory(finalUrl, (data.post && data.post.text) || '', result, srvVer, data.inputTokens, data.outputTokens, data.post).catch(function(e){ console.warn('History save error:', e.message); return null; });
+  const entry = await saveToHistory(finalUrl, (data.post && data.post.text) || '', result, srvVer, data.inputTokens, data.outputTokens, data.post,
+    { jevTokens: data.jevTokens || 0, models: data.models || (data.analysis && data.analysis.models) || null }).catch(function(e){ console.warn('History save error:', e.message); return null; });
   result.scanId = entry ? entry.scanId : '';
   showResults(finalUrl, result);
   recordScan();
@@ -2975,10 +3032,20 @@ function buildResult(analysis, post, entities) {
     });
   }).sort(function(a,b){ return b.pct - a.pct; });
 
-  // Filter to 85%+ and enforce max limits: 3 primary, 2 secondary
-  const allAboveThreshold = rawMatches.filter(function(m){ return m.pct >= 85; });
-  const primaryMatches = allAboveThreshold.filter(function(m){ return !m.secondary; }).slice(0,3);
-  const secondaryMatches = allAboveThreshold.filter(function(m){ return m.secondary; }).slice(0,2);
+  // Display rule depends on which engine produced the result:
+  //  v2 (server 2.x, has 'triage'): the judge's verdict decides — primary ≥60%, secondary ≥50%
+  //  v1 (server 1.x): legacy 85% threshold (Sonnet 4.5 scored higher)
+  const isV2 = !!(analysis && analysis.triage !== undefined);
+  let primaryMatches, secondaryMatches;
+  if (isV2) {
+    primaryMatches = rawMatches.filter(function(m){ return m.alignment === 'primary' && m.pct >= 60; }).slice(0,3);
+    secondaryMatches = rawMatches.filter(function(m){ return m.alignment === 'secondary' && m.pct >= 50; }).slice(0,2);
+  } else {
+    const allAboveThreshold = rawMatches.filter(function(m){ return m.pct >= 85; });
+    primaryMatches = allAboveThreshold.filter(function(m){ return !m.secondary; }).slice(0,3);
+    secondaryMatches = allAboveThreshold.filter(function(m){ return m.secondary; }).slice(0,2);
+  }
+  const ruleText = isV2 ? "by the judge's verdict (primary ≥60%, secondary ≥50%)" : 'above 85%';
   const matches = primaryMatches.concat(secondaryMatches);
 
   const topPrimary = primaryMatches.length > 0 ? primaryMatches[0] : (matches.length > 0 ? matches[0] : null);
@@ -3001,13 +3068,16 @@ function buildResult(analysis, post, entities) {
       score: topMatch,
       label: topNames || 'No strong alignment detected',
       desc: matches.length > 0
-        ? 'Claude AI found ' + primaryMatches.length + ' primary and ' + secondaryMatches.length + ' secondary alignment' + (secondaryMatches.length !== 1 ? 's' : '') + ' above 85% across ' + entities.length + ' entities. Strongest: ' + (topName || '—') + ' at ' + topMatch + '%.'
-        : 'Claude AI found no entity alignment above 85% across ' + entities.length + ' entities. Post does not strongly serve any tracked entity\'s agenda.'
-    }
+        ? 'Claude AI found ' + primaryMatches.length + ' primary and ' + secondaryMatches.length + ' secondary alignment' + (secondaryMatches.length !== 1 ? 's' : '') + ' ' + ruleText + ' across ' + entities.length + ' entities. Strongest: ' + (topName || '—') + ' at ' + topMatch + '%.'
+        : 'Claude AI found no entity alignment ' + ruleText + ' across ' + entities.length + ' entities. Post does not strongly serve any tracked entity\'s agenda.'
+    },
+    displayRule: isV2 ? 'judge verdict — primary ≥60%, secondary ≥50%' : 'entities at 85%+ fit'
   };
 }
 
 function showResults(url, d) {
+  const ruleEl = document.getElementById('alignment-rule');
+  if (ruleEl) ruleEl.textContent = d.displayRule || 'entities at 85%+ fit';
   document.getElementById('loader').classList.remove('active');
   document.getElementById('results').classList.add('active');
   document.getElementById('result-url-label').textContent = url;
@@ -3936,6 +4006,10 @@ async function renderDeployedVersions() {
     if (healthRes.ok) {
       const h = await healthRes.json();
       cards.push(versionCard('Server', h.version, null, null));
+      const liveEl = document.getElementById('tools-live-config');
+      if (liveEl) liveEl.textContent = h.engine
+        ? 'Server reports — judge: ' + modelName(h.engine.judge) + ' · screening: ' + (h.engine.triage === 'off' ? 'off' : modelName(h.engine.triage)) + ' · default: ' + modelName(h.engine.default)
+        : 'Server v' + h.version + ' (v1 engine — Sonnet 4.5 for scoring)';
     }
 
     // Client sessions — one card per unique version
@@ -3955,7 +4029,7 @@ async function renderDeployedVersions() {
 
     if (promptRes.ok) {
       const promptData = await promptRes.json();
-      const promptNames = { scan:'Scan', coherence:'Coherence', connection:'Connection', synopsis:'Synopsis', actor:'Actor', convergent:'Convergent Interest' };
+      const promptNames = { deep_score:'Judge', scan:'Scan (legacy)', coherence:'Coherence (legacy)', connection:'Connection', synopsis:'Synopsis', actor:'Actor', convergent:'Convergent Interest' };
       (promptData.prompts || []).forEach(function(p) {
         cards.push(versionCard('Prompt: ' + (promptNames[p.name] || p.name), p.version, p.created_at, p.model.replace('claude-','').replace('-20251001','')));
       });
@@ -3969,6 +4043,56 @@ async function renderDeployedVersions() {
 
 // ─── PROMPTS ADMIN ───
 const HARDCODED_PROMPTS = {
+  deep_score: `You are a senior analyst specializing in geopolitical influence operations, information warfare, and social media manipulation, focused on the Israeli-Palestinian conflict and Israeli domestic politics.
+
+CORE QUESTION: Whose agenda does this post serve? Not whether it is true — who benefits from its spread.
+
+POST:
+\${postText}
+
+CANDIDATE ENTITIES — the entities this post is about (pre-selected by a fast screening model; some may be false positives, so score each on its merits and give low scores freely):
+\${entitySummaries}
+Field key: N = public narrative, I = strategic interest, M = modus operandi, C = analyst comments.
+
+OTHER ENTITIES (names only — not mentioned in the post, per the screening model):
+\${otherEntities}
+IMPORTANT: The main beneficiary of a post is often NOT mentioned in it — e.g. a post attacking the government serves the opposition parties, and a critique of one camp's policy serves its rivals. If any entity on this list is a primary or secondary beneficiary, include it in your results using its id. Only include entities from this list when they are primary or secondary.
+
+For EACH candidate entity, score three dimensions from 0 to 100:
+- interest: Would spreading this post advance the entity's strategic interest? Consider content (the message itself serves the entity) and context (the post attacks, discredits, or weakens the entity's rivals).
+- mo: Does the post's construction match how this entity AND its supporters typically communicate — rhetoric, framing devices, talking points, emotional register? This is about the content's style, not about who wrote it.
+- narrative: Does the post echo the entity's public narrative and talking points?
+
+SCORE CALIBRATION — use the full scale, applied to each dimension:
+- 90-100: unmistakable — the post's core message IS this entity's agenda, or it attacks this entity's main rivals in this entity's own terms.
+- 70-89: strong — the post clearly and substantially advances the entity.
+- 50-69: moderate — real but partial or diluted benefit.
+- 20-49: weak or incidental.
+- 0-19: none.
+Alignment is about whose agenda the CONTENT serves. Do not lower scores because the author seems to be a private individual, a journalist, or an organic supporter rather than an official account — an ordinary citizen's post that clearly advances a party's message aligns with that party just as much.
+
+Then set alignment:
+- "primary": the entity is a direct, main beneficiary. A primary match should typically score 80+ on interest.
+- "secondary": the entity benefits indirectly. Typically 50-80 on interest.
+- "none": no meaningful benefit.
+At most 3 primary and 2 secondary.
+
+RULES:
+- Criticism is not alignment: a post attacking an entity does not serve that entity.
+- Complete the beneficiary chain: when a post attacks or discredits one side, its rivals and opponents benefit.
+- Rankings and preference lists: the elevated entity benefits; the dismissed one does not.
+- ADVERSARIAL FRAMING: If the post portrays an entity as a threat, aggressor, or enemy, that entity cannot be a primary match on interest alone. Score it high only if the post (a) amplifies the entity's power or fear factor in a way that serves its deterrence, or (b) explicitly advocates a policy whose main beneficiary is that entity. A recommendation that incidentally benefits an adversary, while the post's framing opposes it, is at most a secondary match.
+- Quotes and clips: a statement quoted, shown, or debunked in the post may belong to someone the author opposes. Judge the author's overall framing, not isolated lines.
+- The post may be in Hebrew or Arabic. An English translation and an automatic political-context note may be provided — use them as aids, but judge the original meaning.
+
+For every entity with alignment "primary" or "secondary", write in English only:
+- why: 2-3 sentences on which interest is served and how.
+- missing: 2-3 sentences on relevant context the post omits.
+For alignment "none", leave why and missing empty.
+
+Also rate text_ai_score: 1-10 likelihood the text was AI-generated, with a one-sentence English text_ai_reason.
+
+Record your analysis by calling the record_alignment tool exactly once, with one entry per candidate entity plus any beneficiary from the other-entities list. Do not answer in plain text.`,
   scan: `You are a senior analyst specializing in geopolitical influence operations, information warfare, and social media manipulation. Your task is to determine whose agenda a social media post serves, and what context it leaves out.
 
 LANGUAGE NOTE:
@@ -4236,13 +4360,21 @@ Respond ONLY with valid JSON:
 }`,
 };
 const PROMPT_DISPLAY_NAMES = {
-  scan: 'Scan', coherence: 'Coherence', connection: 'Connection',
-  synopsis: 'Synopsis', actor: 'Actor', convergent: 'Convergent Interest'
+  deep_score: 'Judge', connection: 'Connection', synopsis: 'Synopsis', actor: 'Actor',
+  convergent: 'Convergent Interest', scan: 'Scan', coherence: 'Coherence'
 };
+// Defaults match server v2 (used when a prompt hasn't been saved yet)
 const PROMPT_MODELS = {
-  scan: 'claude-sonnet-4-5', coherence: 'claude-sonnet-4-5',
-  connection: 'claude-haiku-4-5-20251001', synopsis: 'claude-sonnet-4-5',
-  actor: 'claude-sonnet-4-5', convergent: 'claude-sonnet-4-5'
+  deep_score: 'claude-opus-5-5', connection: 'claude-haiku-4-5-20251001',
+  synopsis: 'claude-sonnet-5', actor: 'claude-sonnet-5', convergent: 'claude-sonnet-5',
+  scan: 'claude-sonnet-4-5', coherence: 'claude-sonnet-4-5'
+};
+const PROMPT_ORDER = ['deep_score', 'connection', 'synopsis', 'actor', 'convergent', 'scan', 'coherence'];
+const LEGACY_PROMPTS = { scan: true, coherence: true };   // v1 server only — v2 uses the Judge
+const PROMPT_NOTES = {
+  deep_score: 'Final alignment scores, verdict and explanations. Placeholders: \${postText}, \${entitySummaries}, \${otherEntities}.',
+  scan: 'Not used by server v2 — replaced by the Judge. Kept for servers on v1.',
+  coherence: 'Not used by server v2 — replaced by the Judge. Kept for servers on v1.'
 };
 
 let _promptsCache = {};
@@ -4256,21 +4388,32 @@ async function renderPromptsPage() {
     const prompts = {};
     (data.prompts || []).forEach(function(p){ prompts[p.name] = p; });
     _promptsCache = prompts;
-    const names = ['scan','coherence','connection','synopsis','actor','convergent'];
-    document.getElementById('prompts-list').innerHTML = names.map(function(name) {
+    let engine = null;
+    try { const h = await (await fetch(serverUrl + '/')).json(); engine = h.engine || null; } catch (_) {}
+    const jevCard = '<div class="card" style="padding:12px 16px;border-style:dashed">' +
+      '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
+        '<span style="font-size:13px;font-weight:700;color:var(--text);min-width:140px">Screening (Jev)</span>' +
+        '<span style="font-size:11px;color:var(--text3)">' + (engine ? (engine.triage === 'off' ? 'Off — no TYPESAFE_API_KEY' : modelName(engine.triage)) : 'Requires server v2') + '</span>' +
+        '<span style="font-size:10px;color:var(--text3);margin-left:auto">Read-only · configured on Render</span>' +
+      '</div>' +
+      '<div style="margin-top:8px;font-size:11px;color:var(--text2);line-height:1.6">Not prompt-based: for every entity Jev answers three fixed questions: is it <strong>mentioned</strong>, <strong>criticized</strong>, or <strong>praised</strong> in the post? Entities scoring ≥ JEV_THRESHOLD (default 0.3) go to the Judge — at least JEV_MIN_SHORTLIST (5), at most JEV_MAX_SHORTLIST (15). All other entities reach the Judge as a names-only list.</div>' +
+    '</div>';
+    document.getElementById('prompts-list').innerHTML = jevCard + PROMPT_ORDER.map(function(name) {
       const p = prompts[name];
       const model = p ? p.model : PROMPT_MODELS[name];
       const version = p ? p.version : '—';
       const updated = p ? new Date(p.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) : 'Not saved yet';
       const hasPrompt = !!p;
-      return '<div class="card" style="padding:12px 16px">' +
+      const legacy = !!LEGACY_PROMPTS[name];
+      return '<div class="card" style="padding:12px 16px' + (legacy ? ';opacity:.65' : '') + '">' +
         '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
-          '<span style="font-size:13px;font-weight:700;color:var(--text);min-width:140px">' + PROMPT_DISPLAY_NAMES[name] + '</span>' +
+          '<span style="font-size:13px;font-weight:700;color:var(--text);min-width:140px">' + PROMPT_DISPLAY_NAMES[name] + (legacy ? ' <span style="font-size:9px;font-weight:700;color:var(--amber);border:1px solid var(--amber);border-radius:99px;padding:1px 6px;margin-left:4px">LEGACY · v1 only</span>' : '') + '</span>' +
           '<span style="font-family:var(--mono);font-size:10px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(26,107,255,.2);border-radius:99px;padding:2px 8px">v' + version + '</span>' +
-          '<span style="font-size:11px;color:var(--text3)">' + model + '</span>' +
+          '<span style="font-size:11px;color:var(--text3)" title="' + escHtml(model) + '">' + modelName(model) + '</span>' +
           '<span style="font-size:10px;color:var(--text3);margin-left:auto">Last saved: ' + updated + '</span>' +
           '<button onclick="openPromptEditor(\'' + name + '\')" class="btn btn-sm btn-primary" style="font-size:11px">Edit</button>' +
         '</div>' +
+        (PROMPT_NOTES[name] ? '<div style="margin-top:6px;font-size:11px;color:var(--text3)">' + escHtml(PROMPT_NOTES[name]) + '</div>' : '') +
         (hasPrompt ? '<div style="margin-top:8px;font-size:10px;color:var(--text3);font-family:var(--mono);background:var(--bg2);border-radius:var(--radius-sm);padding:6px 8px;max-height:60px;overflow:hidden;line-height:1.5">' + escHtml(p.prompt_text.slice(0, 200)) + '...</div>' : '') +
       '</div>';
     }).join('');
@@ -4668,7 +4811,7 @@ function hashToPrefix(deviceIdOrHash) {
   return Math.abs(h).toString(36).slice(0,4).toUpperCase();
 }
 
-async function saveToHistory(url, postText, result, srvVersion, inputTokens, outputTokens, postData) {
+async function saveToHistory(url, postText, result, srvVersion, inputTokens, outputTokens, postData, meta) {
   const serverUrl = getServerUrl();
   const srvVer = srvVersion || (serverUrl ? await fetchSrvVersion(serverUrl) : '?');
   const scanId = generateScanId(APP_VERSION, srvVer, 'ADMIN');
@@ -4695,7 +4838,9 @@ async function saveToHistory(url, postText, result, srvVersion, inputTokens, out
     outputTokens: outputTokens || 0,
     ogTitle: (postData && postData.ogTitle) || null,
     ogImage: (postData && postData.ogImage) || null,
-    author: (postData && (postData.author || postData.authorHandle)) || null
+    author: (postData && (postData.author || postData.authorHandle)) || null,
+    jevTokens: (meta && meta.jevTokens) || 0,
+    models: (meta && meta.models) || null
   };
   // Save to localStorage — keyed by scanId to prevent duplicates on sync
   const h = getHistory().filter(function(e){
@@ -4796,6 +4941,7 @@ async function syncHistoryFromServer() {
         existing.source = s.source || existing.source || 'admin';
         existing.deviceId = s.deviceId || existing.deviceId || null;
         if (s.fullResult) existing.fullResult = s.fullResult;
+        copyScanMeta(existing, s);
         return;
       }
       // Try match by url+timestamp
@@ -4807,6 +4953,7 @@ async function syncHistoryFromServer() {
         existingByUrl.comment = s.comment || existingByUrl.comment || '';
         existingByUrl.source = s.source || existingByUrl.source || 'admin';
         existingByUrl.deviceId = s.deviceId || existingByUrl.deviceId || null;
+        copyScanMeta(existingByUrl, s);
         byScanId[s.id] = existingByUrl;
         return;
       }
@@ -4827,7 +4974,11 @@ async function syncHistoryFromServer() {
         appVersion: s.appVersion || '?',
         serverVersion: s.serverVersion || '?',
         comment: s.comment || '',
-        fullResult: s.fullResult || null
+        fullResult: s.fullResult || null,
+        inputTokens: s.inputTokens || 0,
+        outputTokens: s.outputTokens || 0,
+        jevTokens: s.jevTokens || 0,
+        models: s.models || null
       };
     });
 
@@ -4889,8 +5040,49 @@ function openHistoryEntry(id) {
   history.pushState({ page: 'analyze', scanId: entry.scanId }, '', '#analyze/' + (entry.scanId||''));
 }
 
+// ─── MODEL LABELS ───
+const MODEL_NAMES = [
+  [/opus-5-5/, 'Opus 5.5'], [/opus-5$/, 'Opus 5'], [/sonnet-5/, 'Sonnet 5'],
+  [/sonnet-4-6/, 'Sonnet 4.6'], [/sonnet-4-5/, 'Sonnet 4.5'], [/haiku-4-5/, 'Haiku 4.5'],
+  [/jev-1\.13/i, 'Jev 1.13'], [/jev/i, 'Jev']
+];
+function modelName(id) {
+  if (!id) return '';
+  for (let i = 0; i < MODEL_NAMES.length; i++) if (MODEL_NAMES[i][0].test(id)) return MODEL_NAMES[i][1];
+  return String(id).replace(/^claude-/, '');
+}
+// The judge — the model that decided the result. Older scans carry no model data:
+// server 1.x always judged with Sonnet 4.5.
+function scanJudgeLabel(e) {
+  if (e.models && e.models.judge) return modelName(e.models.judge);
+  const sv = String(e.serverVersion || '');
+  if (/^1\./.test(sv)) return 'Sonnet 4.5 (v1)';
+  if (/^2\./.test(sv)) return 'v2 engine';
+  return 'Unknown';
+}
+function scanModelsLabel(e) {
+  const j = scanJudgeLabel(e);
+  const t = e.models && e.models.triage ? modelName(e.models.triage) : '';
+  return t ? j + ' + ' + t : j;
+}
+function copyScanMeta(target, s) {
+  if (!target.inputTokens && s.inputTokens) target.inputTokens = s.inputTokens;
+  if (!target.outputTokens && s.outputTokens) target.outputTokens = s.outputTokens;
+  if (!target.jevTokens && s.jevTokens) target.jevTokens = s.jevTokens;
+  if (!target.models && s.models) target.models = s.models;
+}
+function populateModelFilter() {
+  const sel = document.getElementById('f-model');
+  if (!sel) return;
+  const cur = sel.value;
+  const labels = Array.from(new Set(getHistory().filter(function(e){ return !e.failed; }).map(scanJudgeLabel))).sort();
+  sel.innerHTML = '<option value="">All models</option>' + labels.map(function(l){ return '<option value="' + escHtml(l) + '">' + escHtml(l) + '</option>'; }).join('');
+  if (cur && labels.indexOf(cur) !== -1) sel.value = cur;
+}
+
 function renderHistory() {
   populateVersionDropdowns();
+  populateModelFilter();
   // Populate actor dropdown from server (all clients' actors)
   const serverUrl = getServerUrl();
   const actorSel = document.getElementById('f-actor');
@@ -4953,11 +5145,15 @@ function renderHistoryList(entries) {
     const hasFullResult = !!e.fullResult;
     const srcBadge = '<span class="source-badge ' + (e.source||'admin') + '">' + (e.source||'admin') + '</span>';
     const userBadge = (e.source==='client' && e.deviceId) ? '<span class="user-badge">' + escHtml(e.deviceId) + '</span>' : '';
-    const tokenBadge = (e.inputTokens || e.outputTokens)
-      ? '<span style="font-size:9px;font-family:var(--mono);color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:99px;padding:1px 7px">' +
-        formatTokens((e.inputTokens||0)+(e.outputTokens||0)) + ' tokens' +
-        ' · $' + calcCost(e.inputTokens||0, e.outputTokens||0).toFixed(3) + '</span>'
+    const pill = 'font-size:9px;font-family:var(--mono);color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:99px;padding:1px 7px';
+    const jevTok = e.jevTokens || 0;
+    const tokenBadge = (e.inputTokens || e.outputTokens || jevTok)
+      ? '<span style="' + pill + '">' +
+        formatTokens((e.inputTokens||0)+(e.outputTokens||0)) + ' Claude' +
+        (jevTok ? ' · ' + formatTokens(jevTok) + ' Jev' : '') +
+        ' · $' + (calcCost(e.inputTokens||0, e.outputTokens||0) + (jevTok / 1000000) * getRates().jev).toFixed(3) + '</span>'
       : '';
+    const modelBadge = e.failed ? '' : '<span style="' + pill + '" title="' + escHtml(e.models ? JSON.stringify(e.models) : 'Inferred from server version') + '">' + escHtml(scanModelsLabel(e)) + '</span>';
     return '<div class="history-item">' +
       '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px">' +
         '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
@@ -4966,6 +5162,7 @@ function renderHistoryList(entries) {
           srcBadge +
           userBadge +
           tokenBadge +
+          modelBadge +
         '</div>' +
         '<span class="scan-version">' + escHtml(e.appVersion||'?') + ' / srv ' + escHtml(e.serverVersion||'?') + '</span>' +
       '</div>' +

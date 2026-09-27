@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.24.1</div>
+      <div class="version-badge" id="version-badge">v2.25.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -484,6 +484,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
                 <option value="instagram">Instagram</option>
                 <option value="facebook">Facebook</option>
                 <option value="tiktok">TikTok</option>
+                <option value="telegram">Telegram</option>
                 <option value="youtube">YouTube</option>
                 <option value="news">News (all)</option>
               </select>
@@ -852,6 +853,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
                 <tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Content access</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">yt-dlp (open source)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Downloads video audio and caption from TikTok, Instagram, Facebook, X. Binary fetched from GitHub releases on server start</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">X oEmbed (publish.twitter.com)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Fetches X post text</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Telegram public web pages</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Reads public channel posts (text, date, views, images, short videos) and channel details for actor research — no login</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Internet Archive (Wayback Machine)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Fallback for news articles that block direct access</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Google favicon service</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Source icons on carousel slides (loaded through the server image proxy)</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Admin</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
                 <tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Libraries</td></tr>
@@ -934,8 +936,17 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <h2>Changelog</h2>
 
           <div class="changelog-item">
-            <div class="changelog-ver">v2.24.0</div>
+            <div class="changelog-ver">v2.25.0</div>
             <div class="changelog-date">Current version</div>
+            <ul>
+              <li><strong>Telegram:</strong> public channel posts can be scanned; Telegram in the Source filter, history icons, actor research and carousel slides.</li>
+              <li><strong>History icons</strong> for TikTok, YouTube and Telegram, including older scans.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.24.0</div>
+            <div class="changelog-date">Previous version</div>
             <ul>
               <li><strong>Post history:</strong> each scan shows Claude and Jev tokens, their combined cost, and the models used; new Model filter.</li>
               <li><strong>Tools &amp; dependencies:</strong> new Models used section, plus the live model configuration reported by the server.</li>
@@ -1615,7 +1626,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.24.1';
+const APP_VERSION = '2.25.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -2607,6 +2618,7 @@ function detectPlatformClient(url) {
   if (is('instagram.com')) return 'instagram';
   if (is('facebook.com') || is('fb.com') || is('fb.watch')) return 'facebook';
   if (is('tiktok.com')) return 'tiktok';
+  if (is('t.me') || is('telegram.me')) return 'telegram';
   if (is('youtube.com') || is('youtu.be')) return 'youtube';
   if (path && path !== '/') return 'news';
   return 'unknown';
@@ -2857,6 +2869,9 @@ function extractHandle(url, post) {
   // TikTok: handle is in the URL (tiktok.com/@handle/video/...)
   m = url.match(/tiktok\.com\/@([^\/\?]+)/i);
   if (m && m[1]) return m[1];
+  // Telegram: the channel is the handle (t.me/<channel>/<post>, also t.me/s/…)
+  m = url.match(/(?:^|\/\/)(?:www\.)?(?:t|telegram)\.me\/(?:s\/)?([A-Za-z0-9_]{3,})(?:\/\d+)?/i);
+  if (m && m[1] && m[1] !== 'c') return m[1];
   // Use author from server response if available (Instagram oEmbed)
   if (post && post.authorHandle) return post.authorHandle;
   if (post && post.author) return post.author;
@@ -3566,6 +3581,7 @@ async function drawPostSlide(p, date, isExcluded) {
     if (/facebook\.com|fb\.com/i.test(u)) return 'Facebook';
     if (/youtube\.com|youtu\.be/i.test(u)) return 'YouTube';
     if (/tiktok\.com/i.test(u)) return 'TikTok';
+    if (/(^|\/\/|\.)(t|telegram)\.me\//i.test(u)) return 'Telegram';
     return 'News outlet';
   }
   const platform = getPlatformDisplay(url);
@@ -5120,7 +5136,7 @@ function renderHistoryList(entries) {
     const d = new Date(e.ts);
     const dateStr = d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     const scanId = e.scanId || ('WBT-legacy-' + e.id);
-    const platformIcon = {x:'𝕏',instagram:'📷',facebook:'f',news:'📰',unknown:'🔗'}[e.platform||'unknown']||'🔗';
+    const platformIcon = {x:'𝕏',instagram:'📷',facebook:'f',tiktok:'♪',youtube:'▶',telegram:'✈',news:'📰',unknown:'🔗'}[effectivePlatform(e)]||'🔗';
 
     // Failed scan — distinct red styling
     if (e.failed) {

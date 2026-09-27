@@ -1,5 +1,9 @@
 ## Changelog
 
+### v2.25.0 (admin) | Server: v2.1.0 | Client: v1.20.0
+- Telegram: Source filter, history icon, actor research button, carousel slides, Tools & dependencies entry
+- History icons for TikTok, YouTube and Telegram, including older scans
+
 ### v2.24.1 — bug fix (admin) | Server: v2.0.5 | Client: v1.18.1
 - Prompts tab updated for server v2: new Judge prompt (pre-filled with the server's built-in version), Scan and Coherence marked legacy (v1 only), read-only Screening (Jev) card
 - Model selector: Opus 5.5 and Sonnet 5 added; 4.x models grouped as legacy

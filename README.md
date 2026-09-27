@@ -1,5 +1,9 @@
 ## Changelog
 
+### v2.25.1 — bug fix (admin) | Server: v2.1.0 | Client: v1.20.0
+- Fixed: Edit button did nothing for FAQs with multi-paragraph answers — the editor now loads FAQs by ID instead of embedding their text in the button
+- FAQ list shows paragraph breaks in answers
+
 ### v2.25.0 (admin) | Server: v2.1.0 | Client: v1.20.0
 - Telegram: Source filter, history icon, actor research button, carousel slides, Tools & dependencies entry
 - History icons for TikTok, YouTube and Telegram, including older scans

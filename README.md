@@ -1,5 +1,10 @@
 ## Changelog
 
+### v2.24.1 — bug fix (admin) | Server: v2.0.5 | Client: v1.18.1
+- Prompts tab updated for server v2: new Judge prompt (pre-filled with the server's built-in version), Scan and Coherence marked legacy (v1 only), read-only Screening (Jev) card
+- Model selector: Opus 5.5 and Sonnet 5 added; 4.x models grouped as legacy
+- Judge added to the Deployed versions panel and prompt history
+
 ### v2.21.0 (admin) | Server: v1.28.0 | Client: v1.18.1
 - TikTok coverage: TikTok (and YouTube) in Source filter; actor research for TikTok posts; TikTok name and icon on carousel slides
 - User filter replaces the Admin/Client Source filter — "Admin" option plus individual client users

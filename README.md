@@ -1,5 +1,9 @@
 ## Changelog
 
+### v2.26.0 (admin) | Server: v2.3.0 | Client: v1.20.0
+- Tools & dependencies and Models used now load live from the server, with active / not-configured status per service; older servers fall back to the built-in list
+- Judge prompt editor loads its default text from the server
+
 ### v2.25.1 — bug fix (admin) | Server: v2.1.0 | Client: v1.20.0
 - Fixed: Edit button did nothing for FAQs with multi-paragraph answers — the editor now loads FAQs by ID instead of embedding their text in the button
 - FAQ list shows paragraph breaks in answers

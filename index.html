@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.25.1</div>
+      <div class="version-badge" id="version-badge">v2.26.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -823,6 +823,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <div class="about-section" style="margin-bottom:20px">
           <h2>Tools &amp; dependencies</h2>
           <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Third-party services, models and libraries WBT relies on. Config shows the Render environment variable where one is required; models listed are the defaults, and each can be changed with its variable.</p>
+          <div id="tools-source-note" style="font-size:10px;color:var(--text3);margin-bottom:6px"></div>
           <div id="tools-live-config" style="font-size:11px;color:var(--text2);margin-bottom:10px;font-family:var(--mono)"></div>
           <div class="card" style="padding:0;overflow-x:auto">
             <table style="width:100%;border-collapse:collapse;font-size:11px">
@@ -832,7 +833,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
                 <th style="padding:8px 10px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Used by</th>
                 <th style="padding:8px 10px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Config</th>
               </tr></thead>
-              <tbody>
+              <tbody id="tools-tbody">
                 <tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Hosting &amp; data</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Render</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Hosts the WBT server (Node.js / Express)</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Neon PostgreSQL</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Shared database: scans, clusters, actors, entities, prompts, FAQ, client sessions</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">DATABASE_URL</td></tr>
@@ -841,7 +842,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
                 <tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Models used</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Jev 1.13 (TypeSafe)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Screening: finds which entities a post is about (mentioned, criticized, praised), and pre-checks post pairs in cluster investigations. Only its shortlist reaches Claude.</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">JEV_MODEL</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Claude Opus 5.5</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">The judge: final alignment scores, primary/secondary verdict, and the why/missing explanations</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">CLAUDE_DEEP_MODEL</td></tr>
-                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Claude Sonnet 5</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Default model: actor research and bot detection, cluster synopsis, convergent interest, entity refresh, web-search post fetching, publication research</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">CLAUDE_DEFAULT_MODEL</td></tr>
+                <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Claude Sonnet 5</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Default model: actor research and bot detection, cluster synopsis and membership check, convergent interest, entity refresh, web-search post fetching, publication research</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">CLAUDE_DEFAULT_MODEL</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Claude Haiku 4.5</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Fast tasks: translating Hebrew/Arabic posts to English for screening, and cluster connection checks</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">CLAUDE_FAST_MODEL</td></tr>
                 <tr><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">Whisper large-v3 (Groq)</td><td style="padding:7px 10px;color:var(--text2);line-height:1.5">Transcribes video audio: TikTok, Instagram, Facebook, X</td><td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">Server</td><td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">—</td></tr>
                 <tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">AI &amp; transcription</td></tr>
@@ -936,8 +937,17 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <h2>Changelog</h2>
 
           <div class="changelog-item">
-            <div class="changelog-ver">v2.25.0</div>
+            <div class="changelog-ver">v2.26.0</div>
             <div class="changelog-date">Current version</div>
+            <ul>
+              <li><strong>Live configuration:</strong> Tools &amp; dependencies and Models used now come from the server itself, showing the models actually in use and which services are active. Older servers fall back to the built-in list.</li>
+              <li><strong>Prompts:</strong> the Judge prompt editor loads its default text from the server, so it always matches the running code.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.25.0</div>
+            <div class="changelog-date">Previous version</div>
             <ul>
               <li><strong>Telegram:</strong> public channel posts can be scanned; Telegram in the Source filter, history icons, actor research and carousel slides.</li>
               <li><strong>History icons</strong> for TikTok, YouTube and Telegram, including older scans.</li>
@@ -1626,7 +1636,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.25.1';
+const APP_VERSION = '2.26.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -3992,6 +4002,7 @@ async function exportCarouselZip(canvases, clusterName) {
 
 // ─── DEPLOYED VERSIONS ───
 async function renderDeployedVersions() {
+  fetchSystemInfo().then(renderToolsFromServer);
   const el = document.getElementById('deployed-versions-list');
   if (!el) return;
   const serverUrl = getServerUrl();
@@ -4405,6 +4416,7 @@ async function renderPromptsPage() {
     (data.prompts || []).forEach(function(p){ prompts[p.name] = p; });
     _promptsCache = prompts;
     let engine = null;
+    await fetchSystemInfo();
     try { const h = await (await fetch(serverUrl + '/')).json(); engine = h.engine || null; } catch (_) {}
     const jevCard = '<div class="card" style="padding:12px 16px;border-style:dashed">' +
       '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
@@ -4489,7 +4501,8 @@ function openPromptEditor(name) {
     document.getElementById('prompt-modal-version').value = '1.0.0';
   }
   document.getElementById('prompt-modal-model').value = p ? p.model : PROMPT_MODELS[name];
-  document.getElementById('prompt-modal-text').value = p ? p.prompt_text : (HARDCODED_PROMPTS[name] || '');
+  const serverDefault = _serverSystemInfo && _serverSystemInfo.promptDefaults && _serverSystemInfo.promptDefaults[name];
+  document.getElementById('prompt-modal-text').value = p ? p.prompt_text : (serverDefault || HARDCODED_PROMPTS[name] || '');
   document.getElementById('prompt-edit-modal').style.display = 'flex';
 }
 
@@ -5066,11 +5079,65 @@ function openHistoryEntry(id) {
   history.pushState({ page: 'analyze', scanId: entry.scanId }, '', '#analyze/' + (entry.scanId||''));
 }
 
+// ─── TOOLS & DEPENDENCIES — live from the server (/system/info, server 2.3+) ───
+let _serverSystemInfo = null;
+async function fetchSystemInfo() {
+  const serverUrl = getServerUrl();
+  if (!serverUrl) return null;
+  try {
+    const r = await fetch(serverUrl + '/system/info');
+    if (!r.ok) return null;
+    const d = await r.json();
+    if (!d || !Array.isArray(d.models)) return null;
+    _serverSystemInfo = d;
+    return d;
+  } catch (e) { return null; }
+}
+// Services that live in the admin/client, not on the server — the server can't report these
+const CLIENT_SIDE_SERVICES = [
+  { name: 'GitHub', purpose: 'Source repositories; pushes trigger Render deploys', usedBy: 'All' },
+  { name: 'GitHub Pages', purpose: 'Hosts the admin and client apps', usedBy: 'Admin, Client' },
+  { name: 'Google favicon service', purpose: 'Source icons on carousel slides (loaded through the server image proxy)', usedBy: 'Admin' },
+  { name: 'JSZip (via cdnjs)', purpose: 'Packages carousel slides into a ZIP download', usedBy: 'Admin' },
+  { name: 'Google Fonts', purpose: 'DM Sans, DM Mono, Nunito', usedBy: 'Admin, Client' }
+];
+function toolsRow(name, purpose, usedBy, config, status) {
+  const badge = status === true ? ' <span style="font-size:9px;font-weight:700;color:var(--green)">● active</span>'
+              : status === false ? ' <span style="font-size:9px;font-weight:700;color:var(--text3)">○ not configured</span>' : '';
+  return '<tr' + (status === false ? ' style="opacity:.55"' : '') + '><td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;vertical-align:top">' + escHtml(name) + badge + '</td>' +
+    '<td style="padding:7px 10px;color:var(--text2);line-height:1.5">' + escHtml(purpose) + '</td>' +
+    '<td style="padding:7px 10px;color:var(--text3);white-space:nowrap;vertical-align:top">' + escHtml(usedBy) + '</td>' +
+    '<td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;vertical-align:top">' + escHtml(config || '—') + '</td></tr>';
+}
+function toolsGroup(title) {
+  return '<tr><td colspan="4" style="padding:12px 10px 5px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">' + escHtml(title) + '</td></tr>';
+}
+function renderToolsFromServer(info) {
+  const body = document.getElementById('tools-tbody');
+  const note = document.getElementById('tools-source-note');
+  if (!body) return;
+  if (!info) { if (note) note.textContent = 'Static list — server v2.3+ reports this live.'; return; }
+  let html = toolsGroup('Models used');
+  info.models.forEach(function(m) {
+    html += toolsRow(modelName(m.id) + ' (' + m.provider + ')', m.roles.join('; '), 'Server', m.config, null);
+  });
+  const order = [];
+  info.services.forEach(function(s) { if (order.indexOf(s.group) === -1) order.push(s.group); });
+  order.forEach(function(g) {
+    html += toolsGroup(g);
+    info.services.filter(function(s) { return s.group === g; }).forEach(function(s) { html += toolsRow(s.name, s.purpose, 'Server', s.config, s.active); });
+  });
+  html += toolsGroup('Admin & client');
+  CLIENT_SIDE_SERVICES.forEach(function(s) { html += toolsRow(s.name, s.purpose, s.usedBy, '—', null); });
+  body.innerHTML = html;
+  if (note) note.textContent = 'Live from the server (v' + info.version + ') — models and services reflect its current configuration.';
+}
+
 // ─── MODEL LABELS ───
 const MODEL_NAMES = [
   [/opus-5-5/, 'Opus 5.5'], [/opus-5$/, 'Opus 5'], [/sonnet-5/, 'Sonnet 5'],
   [/sonnet-4-6/, 'Sonnet 4.6'], [/sonnet-4-5/, 'Sonnet 4.5'], [/haiku-4-5/, 'Haiku 4.5'],
-  [/jev-1\.13/i, 'Jev 1.13'], [/jev/i, 'Jev']
+  [/jev-1\.13/i, 'Jev 1.13'], [/jev/i, 'Jev'], [/whisper-large-v3/i, 'Whisper large-v3']
 ];
 function modelName(id) {
   if (!id) return '';

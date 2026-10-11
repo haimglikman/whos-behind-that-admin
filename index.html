@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.29.0</div>
+      <div class="version-badge" id="version-badge">v2.30.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -296,6 +296,10 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
     <button class="nav-item" id="nav-marketing" onclick="showPage('marketing',this)">
       <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2" y="4" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 4V3a2.5 2.5 0 015 0v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
       Marketing
+    </button>
+    <button class="nav-item" id="nav-chatbot" onclick="showPage('chatbot',this)">
+      <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><path d="M2.5 3.5a1.5 1.5 0 011.5-1.5h7a1.5 1.5 0 011.5 1.5v5a1.5 1.5 0 01-1.5 1.5H7l-3 2.5V10h0a1.5 1.5 0 01-1.5-1.5v-5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+      Chatbot
     </button>
     <button class="nav-item" id="nav-about" onclick="showPage('about',this)">
       <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7.5 7v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="4.5" r=".7" fill="currentColor"/></svg>
@@ -948,8 +952,16 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <h2>Changelog</h2>
 
           <div class="changelog-item">
-            <div class="changelog-ver">v2.29.0</div>
+            <div class="changelog-ver">v2.30.0</div>
             <div class="changelog-date">Current version</div>
+            <ul>
+              <li><strong>Chatbot tab:</strong> every question asked on ask.whosbehindthat.com with its answer, cited sources, status, chatbot version, tokens and response time. Totals for questions, sessions, the last 7 days, failures and estimated cost; search and status filter; long answers expand on click.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.29.0</div>
+            <div class="changelog-date">Previous version</div>
             <ul>
               <li><strong>Admin key:</strong> requests to the server now carry the admin key, which server v2.6.0 requires for operator actions (prompts, entities, FAQ, comments) and all-user data (history, actors, sessions, stats). The key is entered once and stored only in this browser.</li>
               <li><strong>Admin access:</strong> new section in About &amp; Setup to change or forget the stored key; a rejected key prompts for a new one automatically.</li>
@@ -959,7 +971,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
 
           <div class="changelog-item">
             <div class="changelog-ver">v2.26.0</div>
-            <div class="changelog-date">Previous version</div>
+            <div class="changelog-date"></div>
             <ul>
               <li><strong>Live configuration:</strong> Tools &amp; dependencies and Models used now come from the server itself, showing the models actually in use and which services are active. Older servers fall back to the built-in list.</li>
               <li><strong>Prompts:</strong> the Judge prompt editor loads its default text from the server, so it always matches the running code.</li>
@@ -1465,6 +1477,26 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
       </div>
     </div><!-- end page-marketing -->
 
+    <div id="page-chatbot" class="page">
+      <div class="page-content">
+        <div class="page-header">
+          <div><h1>Chatbot</h1><p>Questions and answers from <a href="https://ask.whosbehindthat.com" target="_blank" rel="noopener">ask.whosbehindthat.com</a></p></div>
+          <button class="btn btn-sm" onclick="renderChatbotPage()">Refresh</button>
+        </div>
+        <div id="chatbot-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:14px"></div>
+        <div class="card" style="padding:12px 16px">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 160px;gap:10px">
+            <div><div class="filter-label" style="margin-bottom:4px">Search</div><input class="filter-input" id="chatbot-search" placeholder="Search questions and answers" oninput="renderChatbotList()"></div>
+            <div><div class="filter-label" style="margin-bottom:4px">Status</div>
+              <select class="filter-input" id="chatbot-status" onchange="renderChatbotList()">
+                <option value="">All</option><option value="answered">Answered</option><option value="error">Error</option><option value="rate_limited">Rate limited</option>
+              </select></div>
+          </div>
+        </div>
+        <div id="chatbot-list"><div style="font-size:12px;color:var(--text3);padding:8px 0">Loading...</div></div>
+      </div>
+    </div><!-- end page-chatbot -->
+
   </div><!-- end main wrapper -->
 </div><!-- end layout -->
 
@@ -1711,7 +1743,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.29.0';
+const APP_VERSION = '2.30.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -2599,6 +2631,114 @@ function updateScanCounter() {
 // ─────────────────────────────────────────────
 // NAV
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// CHATBOT LOG (server v2.7.0+)
+// ─────────────────────────────────────────────
+let _chatbotEntries = [];
+// Estimated at Claude Haiku 4.5 list prices, $ per million tokens
+const CHATBOT_RATES = { input: 1, output: 5, cacheRead: 0.1, cacheWrite: 1.25 };
+
+function chatbotCost(t) {
+  return ((+t.input_tokens || 0) * CHATBOT_RATES.input + (+t.output_tokens || 0) * CHATBOT_RATES.output
+    + (+t.cache_read_tokens || 0) * CHATBOT_RATES.cacheRead + (+t.cache_write_tokens || 0) * CHATBOT_RATES.cacheWrite) / 1e6;
+}
+
+function chatbotStatCard(label, value) {
+  return '<div class="card" style="margin:0;padding:12px 14px"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">' + label + '</div>'
+    + '<div style="font-size:20px;font-weight:700;color:var(--text);margin-top:4px;font-family:var(--mono)">' + value + '</div></div>';
+}
+
+async function renderChatbotPage() {
+  const list = document.getElementById('chatbot-list');
+  const stats = document.getElementById('chatbot-stats');
+  list.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0">Loading...</div>';
+  try {
+    const res = await fetch(getServerUrl() + '/chatbot/list?limit=500');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || ('Server error ' + res.status));
+    _chatbotEntries = data.entries || [];
+    const t = data.totals || {};
+    stats.innerHTML = chatbotStatCard('Questions', (+t.questions || 0).toLocaleString())
+      + chatbotStatCard('Sessions', (+t.sessions || 0).toLocaleString())
+      + chatbotStatCard('Last 7 days', (+t.last7d || 0).toLocaleString())
+      + chatbotStatCard('Failed', (+t.failed || 0).toLocaleString())
+      + chatbotStatCard('Est. cost', '$' + chatbotCost(t).toFixed(2));
+    renderChatbotList();
+  } catch (e) {
+    stats.innerHTML = '';
+    list.innerHTML = '<div class="card"><div style="font-size:12px;color:var(--red)">Could not load the chatbot log: ' + escHtml(e.message) + '. Server v2.7.0 or later is required.</div></div>';
+  }
+}
+
+function chatbotSourceLabel(title) {
+  if (!title) return '';
+  if (title.indexOf('WBT FAQ') === 0) return 'FAQ';
+  const parts = title.split('/');
+  const repo = parts.shift().replace('whos-behind-that-', '');
+  const file = parts.join('/');
+  return repo + ' · ' + (file === 'README.md' ? 'changelog' : file.replace(/^docs\//, '').replace(/\.md$/i, ''));
+}
+
+const CHATBOT_PREVIEW = 280;
+
+function renderChatbotList() {
+  const list = document.getElementById('chatbot-list');
+  if (!list) return;
+  const q = (document.getElementById('chatbot-search').value || '').trim().toLowerCase();
+  const status = document.getElementById('chatbot-status').value;
+  const rows = _chatbotEntries.filter(function(e) {
+    if (status && e.status !== status) return false;
+    if (q && ((e.question || '') + ' ' + (e.answer || '')).toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  if (!rows.length) {
+    list.innerHTML = '<div class="card"><div style="font-size:12px;color:var(--text3)">' + (_chatbotEntries.length ? 'No entries match the filters.' : 'No questions yet. They appear here once wbt-chatbot v1.2.0+ runs with CHATBOT_LOG_KEY set.') + '</div></div>';
+    return;
+  }
+  const statusStyle = { answered: 'background:#dcfce7;color:#166534', error: 'background:var(--red-dim);color:#991b1b', rate_limited: 'background:#fef3c7;color:#92400e' };
+  let html = '';
+  rows.forEach(function(e) {
+    const ts = new Date(e.ts);
+    const when = ts.toLocaleDateString('en-GB') + ' ' + ts.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const tokens = (+e.input_tokens || 0) + (+e.output_tokens || 0) + (+e.cache_read_tokens || 0) + (+e.cache_write_tokens || 0);
+    html += '<div class="card" style="margin-bottom:8px;padding:12px 16px">';
+    html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:10.5px;color:var(--text3);margin-bottom:6px;font-family:var(--mono)">';
+    html += '<span>' + escHtml(when) + '</span>';
+    html += '<span style="border-radius:99px;padding:1px 8px;font-weight:700;' + (statusStyle[e.status] || '') + '">' + escHtml((e.status || '').replace('_', ' ')) + '</span>';
+    if (e.session_id) html += '<span title="Questions asked in the same page visit share a session">session ' + escHtml(String(e.session_id).slice(0, 8)) + '</span>';
+    if (e.chatbot_version) html += '<span>v' + escHtml(e.chatbot_version) + '</span>';
+    if (tokens) html += '<span>' + tokens.toLocaleString() + ' tokens · $' + chatbotCost(e).toFixed(4) + '</span>';
+    if (e.latency_ms) html += '<span>' + (e.latency_ms / 1000).toFixed(1) + 's</span>';
+    html += '</div>';
+    html += '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">' + escHtml(e.question) + '</div>';
+    if (e.answer) {
+      const long = e.answer.length > CHATBOT_PREVIEW;
+      html += '<div data-id="' + escHtml(String(e.id)) + '" data-full="0"' + (long ? ' onclick="toggleChatbotAnswer(this)" title="Click to expand"' : '')
+        + ' style="font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-line' + (long ? ';cursor:pointer' : '') + '">'
+        + escHtml(long ? e.answer.slice(0, CHATBOT_PREVIEW) + '… ▸' : e.answer) + '</div>';
+    }
+    const sources = Array.isArray(e.sources) ? e.sources : [];
+    if (sources.length) {
+      html += '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">';
+      sources.forEach(function(src) {
+        const url = /^https:\/\//.test(src.url || '') ? src.url : '#';
+        html += '<a href="' + escHtml(url) + '" target="_blank" rel="noopener" style="font-family:var(--mono);font-size:10px;color:var(--text2);background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:2px 7px">' + escHtml(chatbotSourceLabel(src.title)) + '</a>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function toggleChatbotAnswer(el) {
+  const entry = _chatbotEntries.find(function(e) { return String(e.id) === el.getAttribute('data-id'); });
+  if (!entry || !entry.answer) return;
+  const expanded = el.getAttribute('data-full') === '1';
+  el.textContent = expanded ? entry.answer.slice(0, CHATBOT_PREVIEW) + '… ▸' : entry.answer;
+  el.setAttribute('data-full', expanded ? '0' : '1');
+}
+
 function showPage(name, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2608,6 +2748,7 @@ function showPage(name, el) {
   if (name === 'history') { renderHistory(); syncHistoryFromServer(); }
   if (name === 'actors') { renderActors(); syncActorsFromServer(); }
   if (name === 'marketing') { renderMarketingPage(); }
+  if (name === 'chatbot') { renderChatbotPage(); }
   if (name === 'investigate') { renderBasket(); updatePendingBanner(); }
   if (name === 'clusters') { renderClustersHistory(); }
   if (name === 'faq') { renderFaqAdmin(); }
@@ -2641,6 +2782,7 @@ window.addEventListener('popstate', function(e) {
   if (name === 'history') { renderHistory(); syncHistoryFromServer(); }
   if (name === 'actors') { renderActors(); syncActorsFromServer(); }
   if (name === 'marketing') { renderMarketingPage(); }
+  if (name === 'chatbot') { renderChatbotPage(); }
   if (name === 'investigate') { renderBasket(); updatePendingBanner(); }
   if (name === 'clusters') { renderClustersHistory(); }
   if (name === 'faq') { renderFaqAdmin(); }

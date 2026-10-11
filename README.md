@@ -1,5 +1,10 @@
 ## Changelog
 
+### v2.30.0 (admin) | Server: v2.7.0 | Client: v1.20.0 | Chatbot: v1.2.0
+- New Chatbot tab (between Marketing and About & Setup): every question from ask.whosbehindthat.com with answer, cited sources, status, session, chatbot version, tokens, cost and response time
+- Totals: questions, sessions, last 7 days, failed, estimated cost (Haiku 4.5 list prices); search and status filter; long answers expand on click
+- Docs: ADMIN_OVERVIEW.md v1.0.2
+
 ### v2.29.0 (admin) | Server: v2.6.0 | Client: v1.20.0 | Chatbot: v1.0.0
 Built from v2.26.0 (v2.27.x–v2.28.x were dev-only).
 - Admin key: every request to the WBT server carries X-Admin-Key, required by server v2.6.0 for operator actions and all-user data

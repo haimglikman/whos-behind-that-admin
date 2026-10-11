@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.26.0</div>
+      <div class="version-badge" id="version-badge">v2.29.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -811,6 +811,17 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
       <div class="page-content">
       <div class="page-header"><div><h1>About & setup</h1><p>How to use and deploy this tool</p></div></div>
 
+        <!-- Admin access -->
+        <div class="about-section" style="margin-bottom:20px">
+          <h2>Admin access</h2>
+          <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Operator actions and all-user data require the admin key (Render env var <code>ADMIN_KEY</code>). The key is stored only in this browser.</p>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span id="admin-key-status" style="font-size:12px;font-weight:600;color:var(--text2)"></span>
+            <button class="btn btn-sm" onclick="promptAdminKey('Enter the WBT admin key:', true)">Change key</button>
+            <button class="btn btn-sm btn-danger" onclick="forgetAdminKey()">Forget key</button>
+          </div>
+        </div>
+
         <!-- Deployed versions -->
         <div class="about-section" style="margin-bottom:20px">
           <h2>Deployed versions</h2>
@@ -937,8 +948,18 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <h2>Changelog</h2>
 
           <div class="changelog-item">
-            <div class="changelog-ver">v2.26.0</div>
+            <div class="changelog-ver">v2.29.0</div>
             <div class="changelog-date">Current version</div>
+            <ul>
+              <li><strong>Admin key:</strong> requests to the server now carry the admin key, which server v2.6.0 requires for operator actions (prompts, entities, FAQ, comments) and all-user data (history, actors, sessions, stats). The key is entered once and stored only in this browser.</li>
+              <li><strong>Admin access:</strong> new section in About &amp; Setup to change or forget the stored key; a rejected key prompts for a new one automatically.</li>
+              <li>Admin scans are exempt from the server's new daily quotas.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.26.0</div>
+            <div class="changelog-date">Previous version</div>
             <ul>
               <li><strong>Live configuration:</strong> Tools &amp; dependencies and Models used now come from the server itself, showing the models actually in use and which services are active. Older servers fall back to the built-in list.</li>
               <li><strong>Prompts:</strong> the Judge prompt editor loads its default text from the server, so it always matches the running code.</li>
@@ -1462,6 +1483,60 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
 <div class="toast" id="toast"></div>
 
 <script>
+// ── Admin key (server v2.6.0+) ──────────────────────────────────
+// Operator endpoints require X-Admin-Key. The key lives only in this browser's
+// localStorage — never in this file, which is public. Every request to the WBT
+// server gets the header; a 401 asks for the key again and retries once.
+const ADMIN_KEY_STORAGE = 'wbt_admin_key';
+function getAdminKey() { try { return localStorage.getItem(ADMIN_KEY_STORAGE) || ''; } catch(e) { return ''; } }
+function updateAdminKeyStatus() {
+  const el = document.getElementById('admin-key-status');
+  if (el) el.textContent = getAdminKey() ? '● Key saved in this browser' : '○ No key saved';
+}
+function promptAdminKey(message, force) {
+  const entered = window.prompt(message || 'Enter the WBT admin key:');
+  if (entered !== null && entered.trim()) {
+    try { localStorage.setItem(ADMIN_KEY_STORAGE, entered.trim()); } catch(e) {}
+    updateAdminKeyStatus();
+    if (force) toast('Admin key saved');
+    return true;
+  }
+  return false;
+}
+function forgetAdminKey() {
+  try { localStorage.removeItem(ADMIN_KEY_STORAGE); } catch(e) {}
+  updateAdminKeyStatus();
+  toast('Admin key removed from this browser');
+}
+(function installAdminKeyFetch() {
+  const nativeFetch = window.fetch.bind(window);
+  let pendingPrompt = null;   // one prompt at a time, even for parallel requests
+  function isWbtServer(url) {
+    try { return new URL(url, location.href).origin === new URL(getServerUrl()).origin; } catch(e) { return false; }
+  }
+  function withKey(init) {
+    const opts = Object.assign({}, init || {});
+    const headers = new Headers(opts.headers || {});
+    const key = getAdminKey();
+    if (key) headers.set('X-Admin-Key', key);
+    opts.headers = headers;
+    return opts;
+  }
+  window.fetch = async function(input, init) {
+    const url = typeof input === 'string' ? input : (input && input.url) || '';
+    if (!isWbtServer(url)) return nativeFetch(input, init);
+    const res = await nativeFetch(input, withKey(init));
+    if (res.status !== 401) return res;
+    if (!pendingPrompt) {
+      pendingPrompt = Promise.resolve().then(function() {
+        return promptAdminKey(getAdminKey() ? 'The server rejected the admin key. Enter the correct key:' : 'This action requires the WBT admin key:');
+      }).finally(function() { setTimeout(function() { pendingPrompt = null; }, 0); });
+    }
+    const entered = await pendingPrompt;
+    return entered ? nativeFetch(input, withKey(init)) : res;
+  };
+})();
+
 const DEFAULT_ENTITIES = [
   // ── NATION STATES ──
   { id:1, name:"Israel / Likud (Netanyahu government)", type:"Nation state", narrative:"Israel is exercising its inherent right to self-defense following the October 7, 2023 Hamas terrorist attack. Goals: eliminate Hamas military and governing capabilities, secure return of all hostages, and prevent Gaza from being used as a future base for attacks. Israel maintains it targets Hamas infrastructure, not civilians.", interest:"Permanently dismantling Hamas as a military force, preventing Iranian regional hegemony, maintaining military superiority, and—for Netanyahu's coalition—avoiding political collapse, winning the 2026 elections, and delaying accountability for October 7 intelligence failures.", mo:"Sustained air and ground campaign in Gaza; economic blockade; targeted assassinations of Hamas/Hezbollah leadership; diplomatic pressure to block ICC/ICJ proceedings; leveraging U.S. military aid; framing the election as a security referendum on Netanyahu's leadership.", comments:"Likud polling ~25 seats in 2026 elections. Netanyahu faces ICC arrest warrant. Coalition depends on Ben Gvir and Smotrich; Haredi parties are indispensable partners. Bennett leads the opposition." },
@@ -1636,7 +1711,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.26.0';
+const APP_VERSION = '2.29.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -5630,6 +5705,8 @@ function clearActors() {
 // ─────────────────────────────────────────────
 
 window.addEventListener('DOMContentLoaded', function() {
+  if (!getAdminKey()) promptAdminKey('Enter the WBT admin key (stored only in this browser):');
+  updateAdminKeyStatus();
   const serverUrl = getServerUrl();
   if (serverUrl) document.getElementById('server-url-input').value = serverUrl;
   updateServerBar(serverUrl);

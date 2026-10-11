@@ -1,5 +1,14 @@
 ## Changelog
 
+### v2.29.0 (admin) | Server: v2.6.0 | Client: v1.20.0 | Chatbot: v1.0.0
+Built from v2.26.0 (v2.27.x–v2.28.x were dev-only).
+- Admin key: every request to the WBT server carries X-Admin-Key, required by server v2.6.0 for operator actions and all-user data
+- Key entered once on first load and stored only in this browser; a rejected key (401) prompts once and retries the request
+- About & Setup: new Admin access section with key status, Change key and Forget key
+- Docs: ADMIN_OVERVIEW.md v1.0.1
+
+### v2.27.x and v2.28.x deprecated DEV
+
 ### v2.26.0 (admin) | Server: v2.3.0 | Client: v1.20.0
 - Tools & dependencies and Models used now load live from the server, with active / not-configured status per service; older servers fall back to the built-in list
 - Judge prompt editor loads its default text from the server

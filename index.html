@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.30.0</div>
+      <div class="version-badge" id="version-badge">v2.30.1</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -1743,7 +1743,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.30.0';
+const APP_VERSION = '2.30.1';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -2686,46 +2686,72 @@ function renderChatbotList() {
   if (!list) return;
   const q = (document.getElementById('chatbot-search').value || '').trim().toLowerCase();
   const status = document.getElementById('chatbot-status').value;
-  const rows = _chatbotEntries.filter(function(e) {
+  const matches = function(e) {
     if (status && e.status !== status) return false;
     if (q && ((e.question || '') + ' ' + (e.answer || '')).toLowerCase().indexOf(q) === -1) return false;
     return true;
+  };
+  // One conversation per session (questions oldest first); entries without a session stand alone.
+  const groups = {}, order = [];
+  _chatbotEntries.forEach(function(e) {
+    const k = e.session_id ? 's:' + e.session_id : 'e:' + e.id;
+    if (!groups[k]) { groups[k] = []; order.push(k); }
+    groups[k].push(e);
   });
-  if (!rows.length) {
-    list.innerHTML = '<div class="card"><div style="font-size:12px;color:var(--text3)">' + (_chatbotEntries.length ? 'No entries match the filters.' : 'No questions yet. They appear here once wbt-chatbot v1.2.0+ runs with CHATBOT_LOG_KEY set.') + '</div></div>';
+  const convs = order
+    .map(function(k) { return groups[k].slice().sort(function(a, b) { return new Date(a.ts) - new Date(b.ts); }); })
+    .filter(function(c) { return c.some(matches); })
+    .sort(function(a, b) { return new Date(b[b.length - 1].ts) - new Date(a[a.length - 1].ts); });   // most recent activity first
+  if (!convs.length) {
+    list.innerHTML = '<div class="card"><div style="font-size:12px;color:var(--text3)">' + (_chatbotEntries.length ? 'No conversations match the filters.' : 'No questions yet. They appear here once wbt-chatbot v1.2.0+ runs with CHATBOT_LOG_KEY set.') + '</div></div>';
     return;
   }
   const statusStyle = { answered: 'background:#dcfce7;color:#166534', error: 'background:var(--red-dim);color:#991b1b', rate_limited: 'background:#fef3c7;color:#92400e' };
+  const when = function(d) { const ts = new Date(d); return ts.toLocaleDateString('en-GB') + ' ' + ts.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); };
+  const tokensOf = function(e) { return (+e.input_tokens || 0) + (+e.output_tokens || 0) + (+e.cache_read_tokens || 0) + (+e.cache_write_tokens || 0); };
+  const filtering = !!(q || status);
   let html = '';
-  rows.forEach(function(e) {
-    const ts = new Date(e.ts);
-    const when = ts.toLocaleDateString('en-GB') + ' ' + ts.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    const tokens = (+e.input_tokens || 0) + (+e.output_tokens || 0) + (+e.cache_read_tokens || 0) + (+e.cache_write_tokens || 0);
-    html += '<div class="card" style="margin-bottom:8px;padding:12px 16px">';
-    html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:10.5px;color:var(--text3);margin-bottom:6px;font-family:var(--mono)">';
-    html += '<span>' + escHtml(when) + '</span>';
-    html += '<span style="border-radius:99px;padding:1px 8px;font-weight:700;' + (statusStyle[e.status] || '') + '">' + escHtml((e.status || '').replace('_', ' ')) + '</span>';
-    if (e.session_id) html += '<span title="Questions asked in the same page visit share a session">session ' + escHtml(String(e.session_id).slice(0, 8)) + '</span>';
-    if (e.chatbot_version) html += '<span>v' + escHtml(e.chatbot_version) + '</span>';
-    if (tokens) html += '<span>' + tokens.toLocaleString() + ' tokens · $' + chatbotCost(e).toFixed(4) + '</span>';
-    if (e.latency_ms) html += '<span>' + (e.latency_ms / 1000).toFixed(1) + 's</span>';
+  convs.forEach(function(c) {
+    const first = c[0];
+    const totalTokens = c.reduce(function(s, e) { return s + tokensOf(e); }, 0);
+    const totalCost = c.reduce(function(s, e) { return s + chatbotCost(e); }, 0);
+    const versions = Array.from(new Set(c.map(function(e) { return e.chatbot_version; }).filter(Boolean)));
+    html += '<div class="card" style="margin-bottom:10px;padding:12px 16px">';
+    html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:10.5px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">';
+    html += '<span>' + escHtml(when(first.ts)) + '</span>';
+    html += '<span style="font-weight:700;color:var(--text2)">' + c.length + (c.length === 1 ? ' question' : ' questions') + '</span>';
+    if (first.session_id) html += '<span title="Questions asked in the same page visit share a session">session ' + escHtml(String(first.session_id).slice(0, 8)) + '</span>';
+    if (versions.length) html += '<span>v' + versions.map(escHtml).join(', v') + '</span>';
+    if (totalTokens) html += '<span>' + totalTokens.toLocaleString() + ' tokens · $' + totalCost.toFixed(4) + '</span>';
     html += '</div>';
-    html += '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">' + escHtml(e.question) + '</div>';
-    if (e.answer) {
-      const long = e.answer.length > CHATBOT_PREVIEW;
-      html += '<div data-id="' + escHtml(String(e.id)) + '" data-full="0"' + (long ? ' onclick="toggleChatbotAnswer(this)" title="Click to expand"' : '')
-        + ' style="font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-line' + (long ? ';cursor:pointer' : '') + '">'
-        + escHtml(long ? e.answer.slice(0, CHATBOT_PREVIEW) + '… ▸' : e.answer) + '</div>';
-    }
-    const sources = Array.isArray(e.sources) ? e.sources : [];
-    if (sources.length) {
-      html += '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">';
-      sources.forEach(function(src) {
-        const url = /^https:\/\//.test(src.url || '') ? src.url : '#';
-        html += '<a href="' + escHtml(url) + '" target="_blank" rel="noopener" style="font-family:var(--mono);font-size:10px;color:var(--text2);background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:2px 7px">' + escHtml(chatbotSourceLabel(src.title)) + '</a>';
-      });
+    c.forEach(function(e, i) {
+      const hit = filtering && matches(e);
+      html += '<div style="' + (i ? 'border-top:1px solid var(--border);padding-top:10px;margin-top:10px;' : '') + (hit ? 'border-left:3px solid var(--blue);padding-left:10px;' : '') + '">';
+      html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:10px;color:var(--text3);margin-bottom:4px;font-family:var(--mono)">';
+      html += '<span>' + escHtml(new Date(e.ts).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })) + '</span>';
+      html += '<span style="border-radius:99px;padding:1px 8px;font-weight:700;' + (statusStyle[e.status] || '') + '">' + escHtml((e.status || '').replace('_', ' ')) + '</span>';
+      const t = tokensOf(e);
+      if (t) html += '<span>' + t.toLocaleString() + ' tokens · $' + chatbotCost(e).toFixed(4) + '</span>';
+      if (e.latency_ms) html += '<span>' + (e.latency_ms / 1000).toFixed(1) + 's</span>';
       html += '</div>';
-    }
+      html += '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">' + escHtml(e.question) + '</div>';
+      if (e.answer) {
+        const long = e.answer.length > CHATBOT_PREVIEW;
+        html += '<div data-id="' + escHtml(String(e.id)) + '" data-full="0"' + (long ? ' onclick="toggleChatbotAnswer(this)" title="Click to expand"' : '')
+          + ' style="font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-line' + (long ? ';cursor:pointer' : '') + '">'
+          + escHtml(long ? e.answer.slice(0, CHATBOT_PREVIEW) + '… ▸' : e.answer) + '</div>';
+      }
+      const sources = Array.isArray(e.sources) ? e.sources : [];
+      if (sources.length) {
+        html += '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">';
+        sources.forEach(function(src) {
+          const url = /^https:\/\//.test(src.url || '') ? src.url : '#';
+          html += '<a href="' + escHtml(url) + '" target="_blank" rel="noopener" style="font-family:var(--mono);font-size:10px;color:var(--text2);background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:2px 7px">' + escHtml(chatbotSourceLabel(src.title)) + '</a>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    });
     html += '</div>';
   });
   list.innerHTML = html;
@@ -2941,8 +2967,8 @@ function renderEntityTags() {
 
 function populateVersionDropdowns() {
   const h = getHistory();
-  function parseVer(v) { const p=(v||'').split('.').map(Number); return [p[0]||0,p[1]||0,p[2]||0]; }
-  function cmpVer(a,b) { const av=parseVer(a),bv=parseVer(b); for(let i=0;i<3;i++){if(av[i]!==bv[i])return av[i]-bv[i];} return 0; }
+  function parseVer(v) { const p=(v||'').split('.').map(Number); return [p[0]||0,p[1]||0,p[2]||0,p[3]||0]; }   // 4th digit = text/prompt-only releases
+  function cmpVer(a,b) { const av=parseVer(a),bv=parseVer(b); for(let i=0;i<4;i++){if(av[i]!==bv[i])return av[i]-bv[i];} return 0; }
 
   const appVers = [...new Set(h.map(function(e){ return e.appVersion||''; }).filter(Boolean))].sort(cmpVer);
   const srvVers = [...new Set(h.map(function(e){ return e.serverVersion||''; }).filter(Boolean))].sort(cmpVer);
@@ -2976,11 +3002,11 @@ function applyFilters() {
   // Semver comparison helper
   function parseVer(v) {
     const p = (v||'').split('.').map(Number);
-    return [p[0]||0, p[1]||0, p[2]||0];
+    return [p[0]||0, p[1]||0, p[2]||0, p[3]||0];   // 4th digit = text/prompt-only releases
   }
   function cmpVer(a, b) {
     const av = parseVer(a), bv = parseVer(b);
-    for (let i = 0; i < 3; i++) { if (av[i] !== bv[i]) return av[i] - bv[i]; }
+    for (let i = 0; i < 4; i++) { if (av[i] !== bv[i]) return av[i] - bv[i]; }
     return 0;
   }
   const dateFrom = document.getElementById('f-date-from').value;
@@ -4709,11 +4735,12 @@ function openPromptEditor(name) {
   const p = _promptsCache[name];
   document.getElementById('prompt-modal-name').value = name;
   document.getElementById('prompt-modal-title').textContent = 'Edit prompt: ' + PROMPT_DISPLAY_NAMES[name];
-  // Suggest next patch version
+  // Prompt edits are text changes → suggest the next 4th-digit version (1.2.0 → 1.2.0.1, 1.2.0.1 → 1.2.0.2)
   if (p && p.version) {
-    const parts = p.version.split('.').map(Number);
-    parts[2]++;
-    document.getElementById('prompt-modal-version').value = parts.join('.');
+    const parts = p.version.split('.').map(function(n) { return parseInt(n, 10) || 0; });
+    while (parts.length < 3) parts.push(0);
+    parts[3] = (parts.length > 3 ? parts[3] : 0) + 1;
+    document.getElementById('prompt-modal-version').value = parts.slice(0, 4).join('.');
   } else {
     document.getElementById('prompt-modal-version').value = '1.0.0';
   }

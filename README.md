@@ -1,5 +1,10 @@
 ## Changelog
 
+### v2.30.1 — bug fix (admin) | Server: v2.7.0.1 | Client: v1.20.0 | Chatbot: v1.2.3.1
+- Chatbot tab shows conversations: each session in one card, questions and answers in order, with question count, versions, and total tokens and cost
+- Version filters compare four-digit versions (text/prompt-only releases)
+- Prompt editor suggests the next four-digit version for prompt edits
+
 ### v2.30.0 (admin) | Server: v2.7.0 | Client: v1.20.0 | Chatbot: v1.2.0
 - New Chatbot tab (between Marketing and About & Setup): every question from ask.whosbehindthat.com with answer, cited sources, status, session, chatbot version, tokens, cost and response time
 - Totals: questions, sessions, last 7 days, failed, estimated cost (Haiku 4.5 list prices); search and status filter; long answers expand on click

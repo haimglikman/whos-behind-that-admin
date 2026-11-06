@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.30.1</div>
+      <div class="version-badge" id="version-badge">v2.31.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -881,6 +881,20 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           </div>
         </div>
 
+        <!-- Blocked sites -->
+        <div class="about-section" style="margin-bottom:20px">
+          <h2>Blocked sites</h2>
+          <p style="font-size:12px;color:var(--text3);margin-bottom:10px">News sites that blocked automated reading in the last 30 days. Rescued scans got through anyway, through an AMP version or Archive.org.</p>
+          <div class="card" style="padding:0;overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:11px">
+              <thead><tr style="text-align:left;border-bottom:1px solid var(--border)">
+                <th style="padding:8px 10px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Site</th><th style="padding:8px 10px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Blocked</th><th style="padding:8px 10px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Rescued</th><th style="padding:8px 10px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Protection</th><th style="padding:8px 10px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Last seen</th>
+              </tr></thead>
+              <tbody id="blocked-sites-body"><tr><td colspan="5" style="padding:10px;color:var(--text3)">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Stats section -->
         <div class="about-section" style="margin-bottom:20px">
           <h2>Stats</h2>
@@ -952,8 +966,16 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <h2>Changelog</h2>
 
           <div class="changelog-item">
-            <div class="changelog-ver">v2.30.0</div>
+            <div class="changelog-ver">v2.31.0</div>
             <div class="changelog-date">Current version</div>
+            <ul>
+              <li><strong>Blocked sites:</strong> About &amp; Setup lists news sites that blocked automated reading in the last 30 days, with how many scans were still rescued and which bot protection was detected.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.30.0</div>
+            <div class="changelog-date">Previous version</div>
             <ul>
               <li><strong>Chatbot tab:</strong> every question asked on ask.whosbehindthat.com with its answer, cited sources, status, chatbot version, tokens and response time. Totals for questions, sessions, the last 7 days, failures and estimated cost; search and status filter; long answers expand on click.</li>
             </ul>
@@ -1743,7 +1765,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.30.1';
+const APP_VERSION = '2.31.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -4244,7 +4266,35 @@ async function exportCarouselZip(canvases, clusterName) {
 }
 
 // ─── DEPLOYED VERSIONS ───
+// ─── BLOCKED SITES (server 2.8+) ───
+async function renderBlockedSites() {
+  const body = document.getElementById('blocked-sites-body');
+  if (!body) return;
+  const msg = function(t) { body.innerHTML = '<tr><td colspan="5" style="padding:10px;color:var(--text3)">' + escHtml(t) + '</td></tr>'; };
+  const serverUrl = getServerUrl();
+  if (!serverUrl) return msg('No server configured.');
+  try {
+    const r = await fetch(serverUrl + '/stats/blocked?days=30');
+    if (r.status === 404) return msg('Requires server v2.8.0 or later.');
+    if (r.status === 401) return msg('Admin key needed to load this list.');
+    const d = await r.json();
+    const sites = (d && d.sites) || [];
+    if (!sites.length) return msg('No blocked sites in the last 30 days.');
+    const td = 'style="padding:7px 10px;vertical-align:top"';
+    body.innerHTML = sites.map(function(x) {
+      const seen = x.lastSeen ? new Date(x.lastSeen).toLocaleDateString('en-GB') : '—';
+      return '<tr style="border-top:1px solid var(--border)">' +
+        '<td ' + td + '><span style="font-weight:600;color:var(--text)">' + escHtml(x.domain) + '</span></td>' +
+        '<td ' + td + '><span style="font-family:var(--mono)">' + (x.blocked || 0) + '</span></td>' +
+        '<td ' + td + '><span style="font-family:var(--mono);color:' + (x.rescued ? 'var(--green)' : 'var(--text3)') + '">' + (x.rescued || 0) + '</span></td>' +
+        '<td ' + td + '><span style="color:var(--text2)">' + escHtml(x.vendor || 'Unknown') + '</span></td>' +
+        '<td ' + td + '><span style="color:var(--text3)">' + escHtml(seen) + '</span></td></tr>';
+    }).join('');
+  } catch (e) { msg('Could not load the list.'); }
+}
+
 async function renderDeployedVersions() {
+  renderBlockedSites();
   fetchSystemInfo().then(renderToolsFromServer);
   const el = document.getElementById('deployed-versions-list');
   if (!el) return;

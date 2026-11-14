@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="white" stroke-width="1.6"/><path d="M7.5 4.5v3l2.2 1.2" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </div>
       <div class="name">Who's Behind That?</div>
-      <div class="version-badge" id="version-badge">v2.31.0</div>
+      <div class="version-badge" id="version-badge">v2.32.0</div>
       <div class="server-version-badge" id="server-version-badge">srv —</div>
     </div>
     <div style="font-size:11px;color:#4a6a9a;font-weight:600">Admin</div>
@@ -323,13 +323,31 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
 
         <div class="url-box">
           <div class="url-row">
-            <input type="text" class="url-input" id="url-input" placeholder="https://x.com/username/status/1234567890" oninput="onUrlChange()" />
+            <input type="text" class="url-input" id="url-input" placeholder="https://x.com/username/status/1234567890" oninput="onUrlChange()" onpaste="onUrlPaste(event)" />
             <button class="btn btn-primary" id="analyze-btn" onclick="startAnalysis()">Analyze</button>
           </div>
           <div style="margin-top:6px">
             <button onclick="toggleManualPaste()" id="manual-paste-toggle" style="background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;padding:0;font-family:var(--sans);display:flex;align-items:center;gap:4px">
               <span id="manual-paste-toggle-icon">▸</span> Paste text manually (Instagram, Reuters, paywalled sites)
             </button>
+            <button onclick="document.getElementById('shot-input').click()" id="shot-toggle" style="background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;padding:0;margin-top:4px;font-family:var(--sans);display:flex;align-items:center;gap:4px">
+              <span>🖼</span> Analyze a screenshot (Facebook, Instagram, WhatsApp, memes) — or paste an image into the URL box
+            </button>
+            <input type="file" id="shot-input" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="onShotPicked(this.files && this.files[0]); this.value=''" />
+          </div>
+          <div id="shot-box" style="display:none;margin-top:8px;margin-bottom:8px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <img id="shot-preview" alt="Screenshot preview" style="width:84px;max-height:140px;object-fit:cover;object-position:top;border-radius:6px;border:1px solid var(--border);flex-shrink:0" />
+              <div style="flex:1;min-width:0">
+                <div id="shot-name" style="font-size:12px;font-weight:600;color:var(--text);word-break:break-all"></div>
+                <div id="shot-meta" style="font-size:11px;color:var(--text3);margin:3px 0 8px"></div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Claude reads the post text, the account and what the image shows. A post URL in the box above is kept as the reference. The image is not stored.</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <button class="btn btn-sm btn-primary" id="shot-analyze-btn" onclick="analyzeScreenshot()">Analyze screenshot</button>
+                  <button class="btn btn-sm" onclick="clearShot()">Remove</button>
+                </div>
+              </div>
+            </div>
           </div>
           <div id="actor-handle-row" style="display:none;margin-bottom:10px">
             <div style="font-size:11px;color:var(--text3);margin-bottom:5px">Instagram/Facebook post detected — enter the account handle for actor research (optional):</div>
@@ -490,6 +508,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
                 <option value="tiktok">TikTok</option>
                 <option value="telegram">Telegram</option>
                 <option value="youtube">YouTube</option>
+                <option value="screenshot">Screenshot</option>
                 <option value="news">News (all)</option>
               </select>
             </div>
@@ -966,8 +985,17 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line
           <h2>Changelog</h2>
 
           <div class="changelog-item">
-            <div class="changelog-ver">v2.31.0</div>
+            <div class="changelog-ver">v2.32.0</div>
             <div class="changelog-date">Current version</div>
+            <ul>
+              <li><strong>Screenshot analysis:</strong> “Analyze a screenshot” under the URL box uploads a screenshot or meme (or paste an image straight into the URL field). Claude reads the post text, the account and what the image shows; the scan is then screened and judged like any post. Built for Facebook and Instagram posts that can't be read automatically. Images are downscaled in the browser and never stored.</li>
+              <li><strong>History:</strong> screenshot scans are saved with their own source (🖼 Screenshot) and a Source filter option; if a post URL is in the box, it is kept as the reference.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-item">
+            <div class="changelog-ver">v2.31.0</div>
+            <div class="changelog-date">Previous version</div>
             <ul>
               <li><strong>Blocked sites:</strong> About &amp; Setup lists news sites that blocked automated reading in the last 30 days, with how many scans were still rescued and which bot protection was detected.</li>
             </ul>
@@ -1765,7 +1793,7 @@ function buildRelationshipSummary(entities) {
   });
   return lines.join('\n');
 }
-const APP_VERSION = '2.31.0';
+const APP_VERSION = '2.32.0';
 
 // ─────────────────────────────────────────────
 // STORAGE
@@ -3195,6 +3223,7 @@ function resetAnalysis() {
   if (warn) warn.style.display = 'none';
   document.getElementById('actor-prompt').style.display = 'none';
   document.getElementById('actor-result-card').style.display = 'none';
+  clearShot();
 }
 
 function showLoader() {
@@ -3282,6 +3311,130 @@ async function analyzeWithManualText() {
     document.getElementById('manual-text-fallback').style.display = 'block';
     showError(e.message);
     saveFailedScan(url, e.message);
+  }
+}
+
+// ─────────────────────────────────────────────
+// SCREENSHOT ANALYSIS — for posts no server can read (Facebook, Instagram, WhatsApp, memes)
+// The image is downscaled here so it fits the server's upload limit; the server reads it
+// with Claude, then screens and judges it like any other post. Nothing is stored but the result.
+// ─────────────────────────────────────────────
+const SHOT_MAX_B64 = 1700000;     // server accepts up to 1.8 MB of base64
+const SHOT_MAX_SIDE = 2000;       // long screenshots: the long side is capped, text stays legible
+let currentShot = null;           // { name, mediaType, base64, width, height, origBytes }
+
+function onUrlPaste(ev) {
+  const items = (ev.clipboardData && ev.clipboardData.items) || [];
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].kind === 'file' && /^image\//.test(items[i].type)) {
+      ev.preventDefault();
+      onShotPicked(items[i].getAsFile());
+      return;
+    }
+  }
+}
+
+function loadImageFile(file) {
+  return new Promise(function(resolve, reject) {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = function() { resolve({ img: img, url: url }); };
+    img.onerror = function() { URL.revokeObjectURL(url); reject(new Error('This file could not be opened as an image.')); };
+    img.src = url;
+  });
+}
+
+// Returns { mediaType, base64, width, height } that fits SHOT_MAX_B64
+async function prepareShot(file) {
+  const loaded = await loadImageFile(file);
+  const img = loaded.img;
+  try {
+    const raw = await new Promise(function(res){ const r = new FileReader(); r.onload = function(){ res(String(r.result)); }; r.readAsDataURL(file); });
+    const rawB64 = raw.split(',')[1] || '';
+    const okType = ['image/png','image/jpeg','image/webp','image/gif'].indexOf(file.type) >= 0;
+    const longSide = Math.max(img.naturalWidth, img.naturalHeight);
+    // Small enough already: send the original, untouched
+    if (okType && rawB64.length <= SHOT_MAX_B64 && longSide <= SHOT_MAX_SIDE) {
+      return { mediaType: file.type, base64: rawB64, width: img.naturalWidth, height: img.naturalHeight };
+    }
+    // Otherwise redraw as JPEG, shrinking until it fits
+    let scale = Math.min(1, SHOT_MAX_SIDE / longSide), quality = 0.88;
+    for (let i = 0; i < 8; i++) {
+      const w = Math.max(1, Math.round(img.naturalWidth * scale)), h = Math.max(1, Math.round(img.naturalHeight * scale));
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h); cx.drawImage(img, 0, 0, w, h);
+      const b64 = c.toDataURL('image/jpeg', quality).split(',')[1] || '';
+      if (b64.length <= SHOT_MAX_B64) return { mediaType: 'image/jpeg', base64: b64, width: w, height: h };
+      if (quality > 0.7) quality -= 0.08; else scale *= 0.8;
+    }
+    throw new Error('The image is too large even after resizing. Crop it to the post and try again.');
+  } finally { URL.revokeObjectURL(loaded.url); }
+}
+
+async function onShotPicked(file) {
+  if (!file) return;
+  if (!/^image\//.test(file.type)) { toast('Please choose an image file (PNG, JPEG, WebP or GIF).'); return; }
+  hideError();
+  try {
+    const prepared = await prepareShot(file);
+    currentShot = Object.assign({ name: file.name || 'Pasted image', origBytes: file.size }, prepared);
+    document.getElementById('shot-preview').src = 'data:' + prepared.mediaType + ';base64,' + prepared.base64;
+    document.getElementById('shot-name').textContent = currentShot.name;
+    const kb = function(n){ return n >= 1048576 ? (n/1048576).toFixed(1) + ' MB' : Math.round(n/1024) + ' KB'; };
+    const sent = Math.round(prepared.base64.length * 3 / 4);
+    document.getElementById('shot-meta').textContent = prepared.width + '×' + prepared.height + ' · ' + kb(sent) +
+      (sent < file.size * 0.95 ? ' (resized from ' + kb(file.size) + ')' : '');
+    document.getElementById('shot-box').style.display = 'block';
+  } catch (e) {
+    clearShot();
+    showError(e.message);
+  }
+}
+
+function clearShot() {
+  currentShot = null;
+  const box = document.getElementById('shot-box'); if (box) box.style.display = 'none';
+  const pv = document.getElementById('shot-preview'); if (pv) pv.removeAttribute('src');
+}
+
+async function analyzeScreenshot() {
+  if (!currentShot) { toast('Choose a screenshot first.'); return; }
+  const serverUrl = getServerUrl();
+  if (!serverUrl) { toast('Please enter your server URL first.'); document.getElementById('server-url-input').focus(); return; }
+  const refUrl = document.getElementById('url-input').value.trim();
+  const url = /^https?:\/\//i.test(refUrl) ? refUrl : '';
+  hideError();
+  showLoader();
+  const steps = document.getElementById('loader-steps').querySelectorAll('.loader-step');
+  if (steps[0]) steps[0].textContent = 'Reading the screenshot (Claude)...';
+  const advance = function(i) {
+    if (steps[i]) { steps[i].classList.remove('active'); steps[i].classList.add('done'); steps[i].textContent = '✓ ' + (i === 0 ? 'Reading the screenshot (Claude)...' : LOAD_STEPS[i]); }
+    if (steps[i+1]) steps[i+1].classList.add('active');
+  };
+  try {
+    const entities = getEntities();
+    const res = await fetch(serverUrl + '/analyze-image', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ image: currentShot.base64, mediaType: currentShot.mediaType, entities: entities })
+    });
+    if (res.status === 404) throw new Error('This server does not support screenshot analysis yet (needs server 2.10.0 or later).');
+    if (!res.ok) { const e = await res.json().catch(function(){return {};}); throw new Error(e.error || 'Server error ' + res.status); }
+    advance(0); await delay(200); advance(1); await delay(200); advance(2); await delay(200);
+    advance(3); await delay(200); advance(4); await delay(200); advance(5); await delay(150);
+    const data = await res.json();
+    const result = buildResult(data.analysis, data.post, entities);
+    const srvVer = await fetchSrvVersion(serverUrl);
+    const entry = await saveToHistory(url, (data.post && data.post.text) || '', result, srvVer, data.inputTokens, data.outputTokens, data.post,
+      { jevTokens: data.jevTokens || 0, models: data.models || null }).catch(function(e){ console.warn('History save error:', e.message); return null; });
+    result.scanId = entry ? entry.scanId : '';
+    showResults(url, result);
+    if (!url) document.getElementById('result-url-label').textContent = '🖼 Screenshot: ' + currentShot.name;
+    clearShot();
+    recordScan();
+  } catch (e) {
+    document.getElementById('loader').classList.remove('active');
+    showError(e.message);
   }
 }
 
@@ -3850,7 +4003,7 @@ async function drawPostSlide(p, date, isExcluded) {
 
   // Detect platform from URL
   function getPlatformDisplay(u) {
-    if (!u) return 'Unknown';
+    if (!u) return p.platform === 'screenshot' ? 'Screenshot' : 'Unknown';
     if (/x\.com|twitter\.com/i.test(u)) return 'X';
     if (/instagram\.com/i.test(u)) return 'Instagram';
     if (/facebook\.com|fb\.com/i.test(u)) return 'Facebook';
@@ -5148,7 +5301,8 @@ async function saveToHistory(url, postText, result, srvVersion, inputTokens, out
   const serverUrl = getServerUrl();
   const srvVer = srvVersion || (serverUrl ? await fetchSrvVersion(serverUrl) : '?');
   const scanId = generateScanId(APP_VERSION, srvVer, 'ADMIN');
-  const platform = detectPlatformClient(url);
+  const fromImage = !!(postData && postData.fromImage);
+  const platform = (fromImage && !url) ? 'screenshot' : detectPlatformClient(url);
   const now = new Date();
   const entry = {
     id: scanId,
@@ -5173,14 +5327,15 @@ async function saveToHistory(url, postText, result, srvVersion, inputTokens, out
     ogImage: (postData && postData.ogImage) || null,
     author: (postData && (postData.author || postData.authorHandle)) || null,
     jevTokens: (meta && meta.jevTokens) || 0,
-    models: (meta && meta.models) || null
+    models: (meta && meta.models) || null,
+    fromImage: fromImage || undefined
   };
   // Save to localStorage — keyed by scanId to prevent duplicates on sync
   const h = getHistory().filter(function(e){
     // Remove any existing entry with same scanId or same url+minute
     const tsMin = e.ts ? e.ts.slice(0,16) : '';
     const newTsMin = entry.ts.slice(0,16);
-    return e.scanId !== scanId && !(e.url === url && tsMin === newTsMin);
+    return e.scanId !== scanId && !(url && e.url === url && tsMin === newTsMin);
   });
   h.unshift(entry);
   if (h.length > 500) h.splice(500);
@@ -5223,7 +5378,7 @@ async function saveFailedScan(url, errorMsg) {
   const h = getHistory().filter(function(e){
     const tsMin = e.ts ? e.ts.slice(0,16) : '';
     const newTsMin = entry.ts.slice(0,16);
-    return e.scanId !== scanId && !(e.url === url && tsMin === newTsMin);
+    return e.scanId !== scanId && !(url && e.url === url && tsMin === newTsMin);
   });
   h.unshift(entry);
   if (h.length > 500) h.splice(500);
@@ -5507,7 +5662,7 @@ function renderHistoryList(entries) {
     const d = new Date(e.ts);
     const dateStr = d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     const scanId = e.scanId || ('WBT-legacy-' + e.id);
-    const platformIcon = {x:'𝕏',instagram:'📷',facebook:'f',tiktok:'♪',youtube:'▶',telegram:'✈',news:'📰',unknown:'🔗'}[effectivePlatform(e)]||'🔗';
+    const platformIcon = {x:'𝕏',instagram:'📷',facebook:'f',tiktok:'♪',youtube:'▶',telegram:'✈',news:'📰',screenshot:'🖼',unknown:'🔗'}[effectivePlatform(e)]||'🔗';
 
     // Failed scan — distinct red styling
     if (e.failed) {

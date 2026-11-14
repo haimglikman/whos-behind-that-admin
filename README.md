@@ -1,5 +1,13 @@
 ## Changelog
 
+### v2.32.0 (admin) | Server: v2.10.0 | Client: v1.23.0 | Chatbot: v1.2.3.1
+- Screenshot analysis: "Analyze a screenshot" under the URL box, or paste an image into the URL box; for Facebook and Instagram posts that can't be read automatically, WhatsApp forwards and memes
+- Images are downscaled in the browser to fit the upload limit; a post URL in the box is kept as the reference
+- History: screenshot scans are saved as their own source (🖼 Screenshot), with a Source filter option; carousel post slides show "Screenshot" as the platform
+
+### v2.31.0 (admin) | Server: v2.8.0 | Client: v1.20.0 | Chatbot: v1.2.3.1
+- Blocked sites: About & Setup lists news sites that blocked automated reading in the last 30 days, with how many scans were still rescued and which bot protection was detected
+
 ### v2.30.1 — bug fix (admin) | Server: v2.7.0.1 | Client: v1.20.0 | Chatbot: v1.2.3.1
 - Chatbot tab shows conversations: each session in one card, questions and answers in order, with question count, versions, and total tokens and cost
 - Version filters compare four-digit versions (text/prompt-only releases)
